@@ -3,74 +3,46 @@
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import EquipmentTable from "@/components/EquipmentTable";
+import { getEquipmentColumns } from "@/components/EquipmentTable/columns";
+import { Equipment } from "@/utilities/types/equipment.types";
 import { messageEnum } from "@/utilities/constants/message.constant";
 import { Box, Button, Typography } from "@mui/material";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
-import { Equipment } from "@/utilities/types/equipment.types";
-import { getEquipmentColumns } from "@/components/EquipmentTable/columns";
-
-// ─── Sample data (replace with your API/store data) ───────────────────────────
+import AddNewApparatusModal from "@/components/AddNewApparatusModal";
+import AddNewEquipmentModal from "@/components/AddNewEquipmentModal";
+import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal";
+import { Apparatus } from "@/utilities/types/apparatus.types";
 
 const SAMPLE_DATA: Equipment[] = [
-  {
-    id: 1,
-    name: "HOLMATRO CUTTER",
-    status: "In Service",
-    apparatus: "Engine 1",
-    lastInspected: "Oct 15, 2023",
-  },
-  {
-    id: 2,
-    name: "SCBA PACK - GEN 3",
-    status: "In Service",
-    apparatus: "Ladder 5",
-    lastInspected: "Nov 02, 2023",
-  },
-  {
-    id: 3,
-    name: "DEFIBRILLATOR LP15",
-    status: "Repair",
-    apparatus: "Rescue 2",
-    lastInspected: "Sep 20, 2023 (Overdue)",
-  },
-  {
-    id: 4,
-    name: "THERMAL CAMERA K65",
-    status: "Out of Service",
-    apparatus: "Ladder 5",
-    lastInspected: "Aug 14, 2023",
-  },
-  {
-    id: 5,
-    name: "FORCIBLE ENTRY AXE",
-    status: "In Service",
-    apparatus: "Engine 1",
-    lastInspected: "Oct 12, 2023",
-  },
-  {
-    id: 6,
-    name: "HALLIGAN BAR",
-    status: "In Service",
-    apparatus: "Engine 1",
-    lastInspected: "Oct 10, 2023",
-  },
-  {
-    id: 7,
-    name: "HYDRAULIC SPREADER",
-    status: "Repair",
-    apparatus: "Rescue 2",
-    lastInspected: "Sep 05, 2023 (Overdue)",
-  },
+  { id: 1, name: "HOLMATRO CUTTER",    total: 4,  inService: 3, down: 1 },
+  { id: 2, name: "SCBA PACK - GEN 3",  total: 12, inService: 11, down: 1 },
+  { id: 3, name: "DEFIBRILLATOR LP15", total: 5,  inService: 3, down: 2 },
+  { id: 4, name: "THERMAL CAMERA K65", total: 3,  inService: 2, down: 1 },
+  { id: 5, name: "FORCIBLE ENTRY AXE", total: 8,  inService: 8, down: 0 },
+  { id: 6, name: "HALLIGAN BAR",        total: 6,  inService: 6, down: 0 },
+  { id: 7, name: "HYDRAULIC SPREADER",  total: 3,  inService: 1, down: 2 },
 ];
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+const SAMPLE_APPARATUS: Partial<Apparatus>[] = [
+  { id: 1, name: "Engine 1" },
+  { id: 2, name: "Engine 2" },
+  { id: 3, name: "Tanker 1" },
+];
+
+type ModalType = "apparatus" | "equipment" | "assign";
+
+interface ModalState {
+  type: ModalType | null;
+}
+
 
 export default function InventoryPage() {
   const [rows, setRows] = useState<Equipment[]>(SAMPLE_DATA);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isOpen, setIsOpen] = useState<ModalState>({ type: null });
 
   const columns = getEquipmentColumns({
     onEdit: handleEdit,
@@ -88,18 +60,21 @@ export default function InventoryPage() {
   }
 
   function handleAddApparatus() {
-    // TODO: open Add Apparatus modal
+    setIsOpen({ type: "apparatus" });
   }
 
   function handleAddEquipment() {
-    // TODO: open Add Equipment modal
+    setIsOpen({ type: "equipment" });
   }
 
   function handleAssignEquipment() {
-    // TODO: open Assign Equipment modal
+    setIsOpen({ type: "assign" });
   }
 
-  // Shared button sx to avoid repetition
+  function handleCloseModal() {
+    setIsOpen({ type: null });
+  }
+
   const btnBaseSx = {
     fontWeight: 700,
     fontSize: "0.75rem",
@@ -108,7 +83,6 @@ export default function InventoryPage() {
     borderRadius: 1.5,
     px: 2,
     py: 1,
-    // Full-width on xs, auto on sm+
     width: { xs: "100%", sm: "auto" },
   };
 
@@ -121,14 +95,12 @@ export default function InventoryPage() {
         sx={{
           flexGrow: 1,
           p: { xs: 2, sm: 3 },
-          // Prevent main content from overflowing behind sidebar on mobile
           width: { xs: "100%", md: "auto" },
           minWidth: 0,
           overflowX: "hidden",
           mt: { xs: "64px", md: 0 },
         }}
       >
-        {/* ── Header ── */}
         <Box
           display="flex"
           justifyContent="space-between"
@@ -137,7 +109,6 @@ export default function InventoryPage() {
           gap={{ xs: 2, sm: 0 }}
           mb={3}
         >
-          {/* Title */}
           <Box>
             <Typography
               variant="h4"
@@ -154,9 +125,6 @@ export default function InventoryPage() {
             </Typography>
           </Box>
 
-          {/* ── Action Buttons ──
-               xs: vertical stack, each button full-width
-               sm+: horizontal row, auto-width  */}
           <Box
             display="flex"
             flexDirection={{ xs: "column", sm: "row" }}
@@ -219,7 +187,6 @@ export default function InventoryPage() {
           </Box>
         </Box>
 
-        {/* ── Table (switches to card list on mobile inside the component) ── */}
         <EquipmentTable
           columns={columns}
           rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
@@ -233,6 +200,20 @@ export default function InventoryPage() {
           }}
         />
       </Box>
+      <AddNewApparatusModal
+        isOpen={isOpen.type === "apparatus"}
+        onClose={handleCloseModal}
+      />
+      <AddNewEquipmentModal
+        isOpen={isOpen.type === "equipment"}
+        onClose={handleCloseModal}
+      />
+      <AssignEquipmentModal
+        isOpen={isOpen.type === "assign"}
+        onClose={handleCloseModal}
+        apparatus={SAMPLE_APPARATUS}
+        equipment={SAMPLE_DATA}
+      />
     </Box>
   );
 }
