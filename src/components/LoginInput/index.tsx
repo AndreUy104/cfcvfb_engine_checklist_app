@@ -48,7 +48,7 @@ export default function Login() {
 
       console.log("Login:", form);
 
-      router.push('/home')
+      router.push('/Home')
     } finally {
       setLoading(false);
     }

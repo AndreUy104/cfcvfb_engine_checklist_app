@@ -4,6 +4,7 @@ import { useState } from "react";
 import ApparatusCard from "@/components/ApparatusCard";
 import Sidebar from "@/components/Sidebar";
 import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { messageEnum } from "@/utilities/constants/message.constant";
 
 export default function HomePage() {
     const [tab, setTab] = useState(0);
@@ -43,7 +44,7 @@ export default function HomePage() {
                             color="gray"
                             sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}
                         >
-                            Daily equipment and vehicle readiness checks
+                            {messageEnum.DashboardDetails}
                         </Typography>
                     </Box>
 

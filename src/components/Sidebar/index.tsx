@@ -17,17 +17,22 @@ import {
   useMediaQuery,
 } from "@mui/material";
 
-import MenuIcon from "@mui/icons-material/Menu";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import InventoryIcon from "@mui/icons-material/Inventory2";
-import DescriptionIcon from "@mui/icons-material/Description";
-import GroupIcon from "@mui/icons-material/Group";
-import SettingsIcon from "@mui/icons-material/Settings";
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import {
+  Menu,
+  Dashboard,
+  Inventory,
+  Description,
+  Group,
+  Settings,
+  Logout,
+  LocalFireDepartment
+} from "@mui/icons-material"
+import { useRouter } from "next/navigation";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
+  const router = useRouter()
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -39,40 +44,26 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: <DashboardIcon /> },
-    { id: "inventory", label: "Inventory", icon: <InventoryIcon /> },
-    { id: "reports", label: "Reports", icon: <DescriptionIcon /> },
-    { id: "personnel", label: "Personnel", icon: <GroupIcon /> },
+    { id: "dashboard", label: "Dashboard", icon: <Dashboard />, route: "/Home"},
+    { id: "inventory", label: "Inventory", icon: <Inventory />, route: "/Inventory"},
+    { id: "reports", label: "Reports", icon: <Description /> },
+    { id: "personnel", label: "Personnel", icon: <Group /> },
   ];
 
   const sidebarContent = (
     <Box
       sx={{
         height: "100%",
+        display: "flex",
+        flexDirection: "column",
         color: "#fff",
         background: "linear-gradient(180deg,#2a0000,#3b0000)",
       }}
     >
       {/* Header */}
       <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
-        <LocalFireDepartmentIcon sx={{ color: "red" }} />
-        <Typography fontWeight="bold">Fire Station Check</Typography>
-      </Box>
-
-      <Divider sx={{ borderColor: "rgba(255,0,0,0.2)" }} />
-
-      {/* Station Info */}
-      <Box sx={{ p: 2 }}>
-        <Typography
-          variant="caption"
-          sx={{ color: "red", fontWeight: "bold", letterSpacing: 1 }}
-        >
-          STATION 42
-        </Typography>
-
-        <Typography variant="body2" sx={{ color: "#aaa" }}>
-          On Duty: B-Shift (North)
-        </Typography>
+        <LocalFireDepartment sx={{ color: "red" }} />
+        <Typography fontWeight="bold">CFCVFB Engine Check List</Typography>
       </Box>
 
       <Divider sx={{ borderColor: "rgba(255,0,0,0.15)" }} />
@@ -85,6 +76,7 @@ export default function Sidebar() {
             onClick={() => {
               setActive(item.id);
               if (isMobile) setOpen(false);
+              router.push(item.route ?? '/Home')
             }}
             sx={{
               borderRadius: 1,
@@ -128,9 +120,27 @@ export default function Sidebar() {
           }}
         >
           <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
-            <SettingsIcon />
+            <Settings />
           </ListItemIcon>
           <ListItemText primary="Settings" />
+        </ListItemButton>
+        {/* Logout */}
+        <ListItemButton
+          sx={{
+            borderRadius: 1,
+            "&:hover": {
+              backgroundColor: "rgba(255,0,0,0.15)",
+            },
+          }}
+          onClick={() => {
+            console.log("Logout clicked");
+            router.push("/")
+          }}
+        >
+          <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
+            <Logout />
+          </ListItemIcon>
+          <ListItemText primary="Logout" />
         </ListItemButton>
       </List>
     </Box>
@@ -147,7 +157,7 @@ export default function Sidebar() {
               color="inherit"
               onClick={toggleDrawer}
             >
-              <MenuIcon />
+              <Menu />
             </IconButton>
 
             <Typography variant="h6">
