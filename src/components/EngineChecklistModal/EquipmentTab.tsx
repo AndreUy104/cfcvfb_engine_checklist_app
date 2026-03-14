@@ -1,32 +1,60 @@
 import { Box, TextField, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { Equipment } from "@/utilities/types/equipment.types";
-import { EquipmentCheck, EquipmentStatus } from "@/utilities/types/engineCheck.types";
+import {
+  EquipmentCheck,
+  EquipmentStatus,
+} from "@/utilities/types/engineCheck.types";
 import StatusToggle from "./StatusToggle";
 
-const equipmentStatusColors: Record<string, { bg: string; border: string; color: string }> = {
-  Serviceable: { bg: "rgba(34,197,94,0.15)", border: "rgba(34,197,94,0.5)", color: "#22c55e" },
-  Down:        { bg: "rgba(239,68,68,0.15)", border: "rgba(239,68,68,0.5)", color: "#ef4444" },
+const equipmentStatusColors: Record<
+  string,
+  { bg: string; border: string; color: string }
+> = {
+  Serviceable: {
+    bg: "rgba(34,197,94,0.15)",
+    border: "rgba(34,197,94,0.5)",
+    color: "#22c55e",
+  },
+  Down: {
+    bg: "rgba(239,68,68,0.15)",
+    border: "rgba(239,68,68,0.5)",
+    color: "#ef4444",
+  },
 };
 
 interface EquipmentTabProps {
   equipmentChecks: EquipmentCheck[];
-  onChange: (id: Equipment["id"], field: keyof EquipmentCheck, value: string | null) => void;
+  onChange: (
+    id: Equipment["id"],
+    field: keyof EquipmentCheck,
+    value: string | null,
+  ) => void;
 }
 
-export default function EquipmentTab({ equipmentChecks, onChange }: EquipmentTabProps) {
+export default function EquipmentTab({
+  equipmentChecks,
+  onChange,
+}: EquipmentTabProps) {
   const theme = useTheme();
 
   const noteFieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.35)", fontSize: "0.8rem" },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.35)",
+      fontSize: "0.8rem",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.03)",
       fontSize: "0.82rem",
       "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
       "&:hover fieldset": { borderColor: "rgba(255,255,255,0.2)" },
-      "&.Mui-focused fieldset": { borderColor: `${theme.palette.secondary.main}60` },
+      "&.Mui-focused fieldset": {
+        borderColor: `${theme.palette.secondary.main}60`,
+      },
     },
   };
 
@@ -66,7 +94,11 @@ export default function EquipmentTab({ equipmentChecks, onChange }: EquipmentTab
           >
             <Typography
               variant="body2"
-              sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 600, fontSize: "0.82rem" }}
+              sx={{
+                color: "rgba(255,255,255,0.75)",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+              }}
             >
               {eq.name}
             </Typography>

@@ -23,7 +23,10 @@ interface ApparatusModalProps {
   onClose: () => void;
 }
 
-export default function AddNewApparatusModal({ isOpen, onClose }: ApparatusModalProps) {
+export default function AddNewApparatusModal({
+  isOpen,
+  onClose,
+}: ApparatusModalProps) {
   const theme = useTheme();
   const [form, setForm] = useState<ApparatusFormData>({
     name: "",
@@ -39,7 +42,7 @@ export default function AddNewApparatusModal({ isOpen, onClose }: ApparatusModal
 
   const handleSubmit = () => {
     console.log("Submitted:", form);
-    onClose()
+    onClose();
   };
 
   const fieldSx = {
@@ -118,7 +121,13 @@ export default function AddNewApparatusModal({ isOpen, onClose }: ApparatusModal
 
       {/* Body */}
       <DialogContent
-        sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+        }}
       >
         <TextField
           label="Apparatus Name"

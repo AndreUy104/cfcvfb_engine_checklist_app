@@ -33,13 +33,12 @@ interface EngineCheckModalProps {
   assignedEquipment?: Partial<Equipment>[];
 }
 
-
 const DEFAULT_EQUIPMENT: Partial<Equipment>[] = [
-  { id: 1, name: "HOLMATRO CUTTER",    inService: 3  },
-  { id: 2, name: "SCBA PACK - GEN 3",  inService: 11 },
-  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3  },
-  { id: 4, name: "THERMAL CAMERA K65", inService: 2  },
-  { id: 5, name: "HALLIGAN BAR",        inService: 6  },
+  { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
+  { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
+  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3 },
+  { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
+  { id: 5, name: "HALLIGAN BAR", inService: 6 },
 ];
 
 export default function EngineCheckModal({
@@ -54,8 +53,8 @@ export default function EngineCheckModal({
   const [activeTab, setActiveTab] = useState(0);
   const [form, setForm] = useState<EngineCheckFormData>({
     apparatusChecks: {
-      waterLevel: 'Empty',
-      fuelLevel: 'Empty',
+      waterLevel: "Empty",
+      fuelLevel: "Empty",
       lightsAndSiren: null,
       batteryStatus: null,
       communicationRadio: null,
@@ -69,10 +68,9 @@ export default function EngineCheckModal({
     remarks: "",
   });
 
-
   function handleApparatusChange<K extends keyof ApparatusChecks>(
     key: K,
-    value: ApparatusChecks[K]
+    value: ApparatusChecks[K],
   ) {
     setForm((prev) => ({
       ...prev,
@@ -83,12 +81,12 @@ export default function EngineCheckModal({
   function handleEquipmentChange(
     id: Equipment["id"],
     field: keyof (typeof form.equipmentChecks)[number],
-    value: string | null
+    value: string | null,
   ) {
     setForm((prev) => ({
       ...prev,
       equipmentChecks: prev.equipmentChecks.map((eq) =>
-        eq.id === id ? { ...eq, [field]: value } : eq
+        eq.id === id ? { ...eq, [field]: value } : eq,
       ),
     }));
   }
@@ -97,7 +95,6 @@ export default function EngineCheckModal({
     console.log("Engine Check Submitted:", form);
     onClose();
   }
-
 
   const tabSx = {
     color: "rgba(255,255,255,0.4)",
@@ -108,7 +105,6 @@ export default function EngineCheckModal({
     minHeight: 40,
     "&.Mui-selected": { color: theme.palette.secondary.main },
   };
-
 
   return (
     <Dialog
@@ -168,14 +164,22 @@ export default function EngineCheckModal({
       </DialogTitle>
 
       {/* Tabs */}
-      <Box sx={{ borderBottom: `1px solid ${theme.palette.secondary.main}20`, flexShrink: 0 }}>
+      <Box
+        sx={{
+          borderBottom: `1px solid ${theme.palette.secondary.main}20`,
+          flexShrink: 0,
+        }}
+      >
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           sx={{
             px: 2,
             minHeight: 40,
-            "& .MuiTabs-indicator": { bgcolor: theme.palette.secondary.main, height: 2 },
+            "& .MuiTabs-indicator": {
+              bgcolor: theme.palette.secondary.main,
+              height: 2,
+            },
           }}
         >
           <Tab label="Apparatus" sx={tabSx} />
@@ -208,19 +212,28 @@ export default function EngineCheckModal({
 
       {/* Remarks — always visible */}
       <Box sx={{ px: 3, pt: 1.5, pb: 1, flexShrink: 0 }}>
-        <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }} />
+        <Divider
+          sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }}
+        />
         <TextField
           label="Remarks"
           placeholder="Any additional observations or notes..."
           value={form.remarks}
-          onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, remarks: e.target.value }))
+          }
           fullWidth
           multiline
           rows={2}
           variant="outlined"
           sx={{
-            "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-            "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+            "& .MuiInputLabel-root": {
+              color: "rgba(255,255,255,0.5)",
+              fontWeight: 600,
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: theme.palette.secondary.main,
+            },
             "& .MuiOutlinedInput-root": {
               color: "#e8e8e8",
               bgcolor: "rgba(255,255,255,0.04)",
@@ -228,13 +241,17 @@ export default function EngineCheckModal({
               fontSize: "0.875rem",
               "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
               "&:hover fieldset": { borderColor: "rgba(255,255,255,0.25)" },
-              "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
+              "&.Mui-focused fieldset": {
+                borderColor: theme.palette.secondary.main,
+              },
             },
           }}
         />
       </Box>
 
-      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
+      <Divider
+        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
+      />
 
       {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>

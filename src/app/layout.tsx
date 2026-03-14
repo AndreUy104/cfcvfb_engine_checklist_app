@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <ThemeRegistry>
           <Box sx={{ display: "flex", minHeight: "100vh" }}>
-            <Sidebar/>
+            <Sidebar />
             {children}
           </Box>
         </ThemeRegistry>

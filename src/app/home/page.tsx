@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ApparatusCard from "@/components/ApparatusCard";
 import EngineCheckModal from "@/components/EngineChecklistModal";
-import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
+import { Box, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { messageEnum } from "@/utilities/constants/message.constant";
 import { Apparatus } from "@/utilities/types/apparatus.types";
 import { Equipment } from "@/utilities/types/equipment.types";
@@ -17,31 +17,28 @@ interface ModalState {
 }
 
 const APPARATUS_LIST = [
-  { id: 1, title: "Engine 1",  status: "ready"    as const, type: "Fighting" },
-  { id: 2, title: "Ladder 5",  status: "progress" as const, type: "Fighting" },
-  { id: 3, title: "Rescue 1",  status: "alert"    as const, type: "Tanker"   },
-  { id: 4, title: "Engine 2",  status: "ready"    as const, type: "Fighting" },
+  { id: 1, title: "Engine 1", status: "ready" as const, type: "Fighting" },
+  { id: 2, title: "Ladder 5", status: "progress" as const, type: "Fighting" },
+  { id: 3, title: "Rescue 1", status: "alert" as const, type: "Tanker" },
+  { id: 4, title: "Engine 2", status: "ready" as const, type: "Fighting" },
 ];
 
 const EQUIPMENT_BY_APPARATUS: Record<number, Partial<Equipment>[]> = {
   1: [
-    { id: 1, name: "HOLMATRO CUTTER",    inService: 3  },
-    { id: 2, name: "SCBA PACK - GEN 3",  inService: 11 },
-    { id: 3, name: "HALLIGAN BAR",        inService: 6  },
+    { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
+    { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
+    { id: 3, name: "HALLIGAN BAR", inService: 6 },
   ],
   2: [
     { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
     { id: 5, name: "DEFIBRILLATOR LP15", inService: 3 },
   ],
-  3: [
-    { id: 6, name: "HYDRAULIC SPREADER", inService: 1 },
-  ],
+  3: [{ id: 6, name: "HYDRAULIC SPREADER", inService: 1 }],
   4: [
-    { id: 1, name: "HOLMATRO CUTTER",    inService: 3 },
+    { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
     { id: 7, name: "FORCIBLE ENTRY AXE", inService: 8 },
   ],
 };
-
 
 export default function HomePage() {
   const [tab, setTab] = useState(0);
@@ -67,8 +64,8 @@ export default function HomePage() {
     tab === 1
       ? APPARATUS_LIST.filter((a) => a.type === "Fighting")
       : tab === 2
-      ? APPARATUS_LIST.filter((a) => a.type === "Tanker")
-      : APPARATUS_LIST;
+        ? APPARATUS_LIST.filter((a) => a.type === "Tanker")
+        : APPARATUS_LIST;
 
   return (
     <>
@@ -133,13 +130,20 @@ export default function HomePage() {
         </Tabs>
 
         {/* Grid */}
-        <Grid container spacing={{ xs: 2, sm: 3 }} mt={1} sx={{ p: { xs: 0, sm: 1, md: 3 } }}>
+        <Grid
+          container
+          spacing={{ xs: 2, sm: 3 }}
+          mt={1}
+          sx={{ p: { xs: 0, sm: 1, md: 3 } }}
+        >
           {filteredApparatus.map((a) => (
             <Grid key={a.id} size={{ xs: 12, sm: 6, md: 3 }}>
               <ApparatusCard
                 title={a.title}
                 status={a.status}
-                onStartCheck={() => handleStartCheck({ id: a.id, name: a.title }, a.id)}
+                onStartCheck={() =>
+                  handleStartCheck({ id: a.id, name: a.title }, a.id)
+                }
               />
             </Grid>
           ))}

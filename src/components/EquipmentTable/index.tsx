@@ -13,7 +13,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Equipment, EquipmentColumn } from  "@/utilities/types/equipment.types";
+import { Equipment, EquipmentColumn } from "@/utilities/types/equipment.types";
 
 interface EquipmentTableProps {
   columns: EquipmentColumn[];
@@ -24,7 +24,6 @@ interface EquipmentTableProps {
   onPageChange: (newPage: number) => void;
   onRowsPerPageChange: (rowsPerPage: number) => void;
 }
-
 
 const HEAD_CELL_SX = {
   color: "#dc2626",
@@ -76,13 +75,20 @@ function MobileCard({
       }}
     >
       {/* Top row: name + actions */}
-      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="flex-start"
+        mb={1.5}
+      >
         <Box flex={1} mr={1}>
           {dataColumns
             .filter((c) => c.key === "name")
             .map((col) => (
               <Box key={col.key}>
-                {col.renderCell ? col.renderCell(row) : String(row[col.key as keyof Equipment] ?? "")}
+                {col.renderCell
+                  ? col.renderCell(row)
+                  : String(row[col.key as keyof Equipment] ?? "")}
               </Box>
             ))}
         </Box>
@@ -92,11 +98,7 @@ function MobileCard({
       </Box>
 
       {/* Remaining data fields as label/value rows */}
-      <Box
-        display="grid"
-        gridTemplateColumns="1fr 1fr"
-        gap={1.25}
-      >
+      <Box display="grid" gridTemplateColumns="1fr 1fr" gap={1.25}>
         {dataColumns
           .filter((c) => c.key !== "name")
           .map((col) => (
@@ -124,7 +126,6 @@ function MobileCard({
     </Box>
   );
 }
-
 
 export default function EquipmentTable({
   columns,
@@ -205,7 +206,9 @@ export default function EquipmentTable({
                     key={row.id}
                     sx={{
                       "&:last-child td": { borderBottom: "none" },
-                      "& td": { borderBottom: "1px solid rgba(255,255,255,0.05)" },
+                      "& td": {
+                        borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      },
                       "&:hover": { background: "rgba(220,38,38,0.05)" },
                       transition: "background 0.15s",
                     }}
@@ -218,8 +221,8 @@ export default function EquipmentTable({
                         {col.renderCell
                           ? col.renderCell(row)
                           : col.key !== "actions"
-                          ? String(row[col.key as keyof Equipment] ?? "")
-                          : null}
+                            ? String(row[col.key as keyof Equipment] ?? "")
+                            : null}
                       </TableCell>
                     ))}
                   </TableRow>

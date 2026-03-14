@@ -11,8 +11,8 @@ export default function ApparatusCard({ title, status, onStartCheck }: Props) {
     status === "ready"
       ? "success"
       : status === "progress"
-      ? "warning"
-      : "error";
+        ? "warning"
+        : "error";
 
   return (
     <Card sx={{ borderRadius: 3 }}>

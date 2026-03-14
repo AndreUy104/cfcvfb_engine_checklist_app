@@ -3,12 +3,35 @@ import { LevelStatus } from "@/utilities/types/engineCheck.types";
 import StatusToggle from "./StatusToggle";
 import { LEVEL_OPTIONS } from "@/utilities/constants/apparatus.constant";
 
-const levelColorMap: Record<string, { bg: string; border: string; color: string }> = {
-  Full:    { bg: "rgba(34,197,94,0.15)",   border: "rgba(34,197,94,0.5)",   color: "#22c55e" },
-  "3/4":   { bg: "rgba(34,197,94,0.15)",   border: "rgba(34,197,94,0.5)",   color: "#22c55e" },
-  "1/2":   { bg: "rgba(245,158,11,0.15)",  border: "rgba(245,158,11,0.5)",  color: "#f59e0b" },
-  "1/4":   { bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.5)",   color: "#ef4444" },
-  Empty:   { bg: "rgba(239,68,68,0.15)",   border: "rgba(239,68,68,0.5)",   color: "#ef4444" },
+const levelColorMap: Record<
+  string,
+  { bg: string; border: string; color: string }
+> = {
+  Full: {
+    bg: "rgba(34,197,94,0.15)",
+    border: "rgba(34,197,94,0.5)",
+    color: "#22c55e",
+  },
+  "3/4": {
+    bg: "rgba(34,197,94,0.15)",
+    border: "rgba(34,197,94,0.5)",
+    color: "#22c55e",
+  },
+  "1/2": {
+    bg: "rgba(245,158,11,0.15)",
+    border: "rgba(245,158,11,0.5)",
+    color: "#f59e0b",
+  },
+  "1/4": {
+    bg: "rgba(239,68,68,0.15)",
+    border: "rgba(239,68,68,0.5)",
+    color: "#ef4444",
+  },
+  Empty: {
+    bg: "rgba(239,68,68,0.15)",
+    border: "rgba(239,68,68,0.5)",
+    color: "#ef4444",
+  },
 };
 
 interface LevelRowProps {

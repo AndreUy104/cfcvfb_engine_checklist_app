@@ -1,5 +1,5 @@
 export type PowerToolStatus = "OK" | "In Repair" | "Down";
- 
+
 export interface PowerTool {
   id: string;
   name: string;
@@ -21,7 +21,7 @@ export interface PowerToolCheckFormData {
   fuel: string;
   remarks: string;
 }
- 
+
 export interface Equipment {
   id: number | string;
   name: string;

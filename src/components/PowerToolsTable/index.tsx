@@ -19,13 +19,48 @@ import PowerToolCheckModal from "../PowerToolsChecklistModal";
 // ── Mock data — replace with your API/store data ──────────────────────────────
 
 const MOCK_TOOLS: PowerTool[] = [
-  { id: "T-001", name: "Angle Grinder 4½″", lastChecked: "Today, 06:00", status: "OK" },
-  { id: "T-002", name: "Circular Saw 7¼″", lastChecked: "Yesterday", status: "In Repair" },
-  { id: "T-003", name: "Rotary Hammer SDS+", lastChecked: "3 days ago", status: "Down" },
-  { id: "T-004", name: "Impact Driver 18V", lastChecked: "Today, 06:00", status: "OK" },
-  { id: "T-005", name: "Reciprocating Saw", lastChecked: "5 days ago", status: "Down" },
-  { id: "T-006", name: "Orbital Sander", lastChecked: "Yesterday", status: "In Repair" },
-  { id: "T-007", name: "Heat Gun 2000W", lastChecked: "Today, 06:00", status: "OK" },
+  {
+    id: "T-001",
+    name: "Angle Grinder 4½″",
+    lastChecked: "Today, 06:00",
+    status: "OK",
+  },
+  {
+    id: "T-002",
+    name: "Circular Saw 7¼″",
+    lastChecked: "Yesterday",
+    status: "In Repair",
+  },
+  {
+    id: "T-003",
+    name: "Rotary Hammer SDS+",
+    lastChecked: "3 days ago",
+    status: "Down",
+  },
+  {
+    id: "T-004",
+    name: "Impact Driver 18V",
+    lastChecked: "Today, 06:00",
+    status: "OK",
+  },
+  {
+    id: "T-005",
+    name: "Reciprocating Saw",
+    lastChecked: "5 days ago",
+    status: "Down",
+  },
+  {
+    id: "T-006",
+    name: "Orbital Sander",
+    lastChecked: "Yesterday",
+    status: "In Repair",
+  },
+  {
+    id: "T-007",
+    name: "Heat Gun 2000W",
+    lastChecked: "Today, 06:00",
+    status: "OK",
+  },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────

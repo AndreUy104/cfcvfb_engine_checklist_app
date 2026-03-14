@@ -74,8 +74,13 @@ export default function PowerToolCheckModal({
   };
 
   const textFieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 600,
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -147,7 +152,6 @@ export default function PowerToolCheckModal({
       {/* Body */}
       <DialogContent sx={{ px: 3, py: 2.5, overflowY: "auto", flexGrow: 1 }}>
         <Box display="flex" flexDirection="column" gap={2.5}>
-
           {/* Tool name — read-only */}
           <Box
             sx={{
@@ -168,7 +172,10 @@ export default function PowerToolCheckModal({
             >
               {tool?.name ?? "—"}
             </Typography>
-            <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.4)" }}
+            >
               {tool?.id ?? "—"}
             </Typography>
           </Box>
@@ -221,7 +228,9 @@ export default function PowerToolCheckModal({
             }}
           >
             <MenuItem value="" disabled>
-              <Typography sx={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.3)" }}>
+              <Typography
+                sx={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.3)" }}
+              >
                 Fuel Level
               </Typography>
             </MenuItem>
@@ -231,18 +240,21 @@ export default function PowerToolCheckModal({
               </MenuItem>
             ))}
           </Select>
-
         </Box>
       </DialogContent>
 
       {/* Remarks — always visible above footer, matching EngineCheckModal */}
       <Box sx={{ px: 3, pt: 1.5, pb: 1, flexShrink: 0 }}>
-        <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }} />
+        <Divider
+          sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }}
+        />
         <TextField
           label="Remarks"
           placeholder="Any additional observations or notes..."
           value={form.remarks}
-          onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, remarks: e.target.value }))
+          }
           fullWidth
           multiline
           rows={2}
@@ -251,7 +263,9 @@ export default function PowerToolCheckModal({
         />
       </Box>
 
-      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
+      <Divider
+        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
+      />
 
       {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>

@@ -2,8 +2,11 @@
 
 import { Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import { PowerTool, PowerToolStatus, PowerToolColumn } from "@/utilities/types/equipment.types";
-
+import {
+  PowerTool,
+  PowerToolStatus,
+  PowerToolColumn,
+} from "@/utilities/types/equipment.types";
 
 const STATUS_CONFIG: Record<
   PowerToolStatus,
@@ -21,7 +24,7 @@ const STATUS_CONFIG: Record<
     textColor: "#f59e0b",
     borderColor: "rgba(245,158,11,0.30)",
   },
-  "Down": {
+  Down: {
     dotColor: "#ef4444",
     bgColor: "rgba(239,68,68,0.10)",
     textColor: "#ef4444",

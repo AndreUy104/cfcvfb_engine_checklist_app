@@ -26,14 +26,14 @@ import {
   Settings,
   Logout,
   LocalFireDepartment,
-  Build
-} from "@mui/icons-material"
+  Build,
+} from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
-  const router = useRouter()
+  const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -45,9 +45,24 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: <Dashboard />, route: "/Home"},
-    { id: "powerTools" , label: "Power Tools Inventory" , icon: <Build/> , route: "PowerTools" },
-    { id: "inventory", label: "Inventory", icon: <Inventory />, route: "/Inventory"},
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <Dashboard />,
+      route: "/Home",
+    },
+    {
+      id: "powerTools",
+      label: "Power Tools Inventory",
+      icon: <Build />,
+      route: "PowerTools",
+    },
+    {
+      id: "inventory",
+      label: "Inventory",
+      icon: <Inventory />,
+      route: "/Inventory",
+    },
     { id: "reports", label: "Reports", icon: <Description /> },
     { id: "personnel", label: "Personnel", icon: <Group /> },
   ];
@@ -78,18 +93,15 @@ export default function Sidebar() {
             onClick={() => {
               setActive(item.id);
               if (isMobile) setOpen(false);
-              router.push(item.route ?? '/Home')
+              router.push(item.route ?? "/Home");
             }}
             sx={{
               borderRadius: 1,
               mb: 0.5,
-              backgroundColor:
-                active === item.id ? "#ff1a1a" : "transparent",
+              backgroundColor: active === item.id ? "#ff1a1a" : "transparent",
               "&:hover": {
                 backgroundColor:
-                  active === item.id
-                    ? "#ff1a1a"
-                    : "rgba(255,0,0,0.15)",
+                  active === item.id ? "#ff1a1a" : "rgba(255,0,0,0.15)",
               },
             }}
           >
@@ -136,7 +148,7 @@ export default function Sidebar() {
           }}
           onClick={() => {
             console.log("Logout clicked");
-            router.push("/")
+            router.push("/");
           }}
         >
           <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
@@ -154,17 +166,11 @@ export default function Sidebar() {
       {isMobile && (
         <AppBar position="fixed" color="primary">
           <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={toggleDrawer}
-            >
+            <IconButton edge="start" color="inherit" onClick={toggleDrawer}>
               <Menu />
             </IconButton>
 
-            <Typography variant="h6">
-              Fire Station Check
-            </Typography>
+            <Typography variant="h6">Fire Station Check</Typography>
           </Toolbar>
         </AppBar>
       )}

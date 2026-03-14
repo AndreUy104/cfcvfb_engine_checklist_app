@@ -8,7 +8,6 @@ export interface Apparatus {
 
 export type ApparatusType = "Fighting" | "Tanker";
 
-
 export interface ApparatusFormData {
   name: string;
   type: ApparatusType | "";

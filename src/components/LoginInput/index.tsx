@@ -27,7 +27,7 @@ export default function Login() {
     password: "",
   });
 
-  const router = useRouter()
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +48,7 @@ export default function Login() {
 
       console.log("Login:", form);
 
-      router.push('/Home')
+      router.push("/Home");
     } finally {
       setLoading(false);
     }
@@ -125,15 +125,9 @@ export default function Login() {
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() =>
-                        setShowPassword((prev) => !prev)
-                      }
+                      onClick={() => setShowPassword((prev) => !prev)}
                     >
-                      {showPassword ? (
-                        <VisibilityOff />
-                      ) : (
-                        <Visibility />
-                      )}
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
                 ),

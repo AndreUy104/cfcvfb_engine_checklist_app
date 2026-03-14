@@ -39,7 +39,6 @@ interface AssignEquipmentModalProps {
   equipment?: Partial<Equipment>[];
 }
 
-
 const DEFAULT_APPARATUS: Partial<Apparatus>[] = [
   { id: 1, name: "Engine 1" },
   { id: 2, name: "Engine 2" },
@@ -47,15 +46,14 @@ const DEFAULT_APPARATUS: Partial<Apparatus>[] = [
 ];
 
 const DEFAULT_EQUIPMENT: Partial<Equipment>[] = [
-  { id: 1, name: "HOLMATRO CUTTER",    inService: 3  },
-  { id: 2, name: "SCBA PACK - GEN 3",  inService: 11 },
-  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3  },
-  { id: 4, name: "THERMAL CAMERA K65", inService: 2  },
-  { id: 5, name: "FORCIBLE ENTRY AXE", inService: 8  },
-  { id: 6, name: "HALLIGAN BAR",        inService: 6  },
-  { id: 7, name: "HYDRAULIC SPREADER",  inService: 1  },
+  { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
+  { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
+  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3 },
+  { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
+  { id: 5, name: "FORCIBLE ENTRY AXE", inService: 8 },
+  { id: 6, name: "HALLIGAN BAR", inService: 6 },
+  { id: 7, name: "HYDRAULIC SPREADER", inService: 1 },
 ];
-
 
 export default function AssignEquipmentModal({
   isOpen,
@@ -66,8 +64,12 @@ export default function AssignEquipmentModal({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [selectedApparatus, setSelectedApparatus] = useState<Apparatus["id"] | "">("");
-  const [selected, setSelected] = useState<Record<string | number, SelectedEquipment>>({});
+  const [selectedApparatus, setSelectedApparatus] = useState<
+    Apparatus["id"] | ""
+  >("");
+  const [selected, setSelected] = useState<
+    Record<string | number, SelectedEquipment>
+  >({});
 
   const selectedCount = Object.keys(selected).length;
 
@@ -86,7 +88,7 @@ export default function AssignEquipmentModal({
   function handleQty(id: Equipment["id"], value: string) {
     const num = Math.max(1, parseInt(value) || 1);
     setSelected((prev) =>
-      prev[id] ? { ...prev, [id]: { ...prev[id], qty: num } } : prev
+      prev[id] ? { ...prev, [id]: { ...prev[id], qty: num } } : prev,
     );
   }
 
@@ -105,8 +107,13 @@ export default function AssignEquipmentModal({
   // ---- Shared sx -----------------------------------------------------------
 
   const fieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 600,
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -227,7 +234,9 @@ export default function AssignEquipmentModal({
           select
           label="Apparatus"
           value={selectedApparatus}
-          onChange={(e) => setSelectedApparatus(Number(e.target.value) as Apparatus["id"])}
+          onChange={(e) =>
+            setSelectedApparatus(Number(e.target.value) as Apparatus["id"])
+          }
           fullWidth
           variant="outlined"
           sx={fieldSx}
@@ -243,7 +252,13 @@ export default function AssignEquipmentModal({
         </TextField>
 
         {/* Section label */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <Typography
             variant="caption"
             sx={{
@@ -319,7 +334,10 @@ export default function AssignEquipmentModal({
                     >
                       {eq.name}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.35)" }}
+                    >
                       {eq.inService ?? 0} in service
                     </Typography>
                   </Box>
@@ -359,8 +377,12 @@ export default function AssignEquipmentModal({
                 <TableRow>
                   <TableCell padding="checkbox" sx={headerCellSx} />
                   <TableCell sx={headerCellSx}>Equipment</TableCell>
-                  <TableCell align="center" sx={headerCellSx}>In Service</TableCell>
-                  <TableCell align="center" sx={headerCellSx}>Qty</TableCell>
+                  <TableCell align="center" sx={headerCellSx}>
+                    In Service
+                  </TableCell>
+                  <TableCell align="center" sx={headerCellSx}>
+                    Qty
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -392,7 +414,9 @@ export default function AssignEquipmentModal({
                         <Typography
                           variant="body2"
                           sx={{
-                            color: isChecked ? "#fff" : "rgba(255,255,255,0.75)",
+                            color: isChecked
+                              ? "#fff"
+                              : "rgba(255,255,255,0.75)",
                             fontWeight: isChecked ? 600 : 400,
                             fontSize: "0.825rem",
                           }}
@@ -424,7 +448,10 @@ export default function AssignEquipmentModal({
                             sx={qtyFieldSx}
                           />
                         ) : (
-                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.2)" }}
+                          >
                             —
                           </Typography>
                         )}
@@ -438,7 +465,9 @@ export default function AssignEquipmentModal({
         )}
       </DialogContent>
 
-      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
+      <Divider
+        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
+      />
 
       {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>

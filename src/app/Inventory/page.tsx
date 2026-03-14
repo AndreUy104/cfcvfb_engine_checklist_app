@@ -15,13 +15,13 @@ import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal";
 import { Apparatus } from "@/utilities/types/apparatus.types";
 
 const SAMPLE_DATA: Equipment[] = [
-  { id: 1, name: "HOLMATRO CUTTER",    total: 4,  inService: 3, down: 1 },
-  { id: 2, name: "SCBA PACK - GEN 3",  total: 12, inService: 11, down: 1 },
-  { id: 3, name: "DEFIBRILLATOR LP15", total: 5,  inService: 3, down: 2 },
-  { id: 4, name: "THERMAL CAMERA K65", total: 3,  inService: 2, down: 1 },
-  { id: 5, name: "FORCIBLE ENTRY AXE", total: 8,  inService: 8, down: 0 },
-  { id: 6, name: "HALLIGAN BAR",        total: 6,  inService: 6, down: 0 },
-  { id: 7, name: "HYDRAULIC SPREADER",  total: 3,  inService: 1, down: 2 },
+  { id: 1, name: "HOLMATRO CUTTER", total: 4, inService: 3, down: 1 },
+  { id: 2, name: "SCBA PACK - GEN 3", total: 12, inService: 11, down: 1 },
+  { id: 3, name: "DEFIBRILLATOR LP15", total: 5, inService: 3, down: 2 },
+  { id: 4, name: "THERMAL CAMERA K65", total: 3, inService: 2, down: 1 },
+  { id: 5, name: "FORCIBLE ENTRY AXE", total: 8, inService: 8, down: 0 },
+  { id: 6, name: "HALLIGAN BAR", total: 6, inService: 6, down: 0 },
+  { id: 7, name: "HYDRAULIC SPREADER", total: 3, inService: 1, down: 2 },
 ];
 
 const SAMPLE_APPARATUS: Partial<Apparatus>[] = [
@@ -35,7 +35,6 @@ type ModalType = "apparatus" | "equipment" | "assign";
 interface ModalState {
   type: ModalType | null;
 }
-
 
 export default function InventoryPage() {
   const [rows, setRows] = useState<Equipment[]>(SAMPLE_DATA);
@@ -186,7 +185,10 @@ export default function InventoryPage() {
 
         <EquipmentTable
           columns={columns}
-          rows={rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+          rows={rows.slice(
+            page * rowsPerPage,
+            page * rowsPerPage + rowsPerPage,
+          )}
           page={page}
           rowsPerPage={rowsPerPage}
           totalCount={rows.length}

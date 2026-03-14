@@ -3,15 +3,9 @@
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import { Equipment, EquipmentColumn } from  "@/utilities/types/equipment.types";
+import { Equipment, EquipmentColumn } from "@/utilities/types/equipment.types";
 
-
-function StatBadge({
-  value,
-}: {
-  value: number;
-
-}) {
+function StatBadge({ value }: { value: number }) {
   return (
     <Box
       sx={{
@@ -58,33 +52,21 @@ export function getEquipmentColumns(options?: {
       key: "total",
       label: "Total",
       align: "center",
-      renderCell: (row) => (
-        <StatBadge
-          value={row.total}
-        />
-      ),
+      renderCell: (row) => <StatBadge value={row.total} />,
     },
 
     {
       key: "inService",
       label: "In Service",
       align: "center",
-      renderCell: (row) => (
-        <StatBadge
-          value={row.inService}
-        />
-      ),
+      renderCell: (row) => <StatBadge value={row.inService} />,
     },
 
     {
       key: "down",
       label: "Down / Busted",
       align: "center",
-      renderCell: (row) => (
-        <StatBadge
-          value={row.down}
-        />
-      ),
+      renderCell: (row) => <StatBadge value={row.down} />,
     },
 
     {

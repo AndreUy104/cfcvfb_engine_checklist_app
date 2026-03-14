@@ -23,7 +23,10 @@ interface AddNewEquipmentModalProps {
   onClose: () => void;
 }
 
-export default function AddNewEquipmentModal({ isOpen, onClose }: AddNewEquipmentModalProps) {
+export default function AddNewEquipmentModal({
+  isOpen,
+  onClose,
+}: AddNewEquipmentModalProps) {
   const theme = useTheme();
   const [form, setForm] = useState<EquipmentFormData>({
     name: "",
@@ -122,7 +125,13 @@ export default function AddNewEquipmentModal({ isOpen, onClose }: AddNewEquipmen
 
       {/* Body */}
       <DialogContent
-        sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+        }}
       >
         {/* Equipment Name */}
         <TextField
@@ -191,7 +200,10 @@ export default function AddNewEquipmentModal({ isOpen, onClose }: AddNewEquipmen
             />
           }
           label={
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.65)" }}>
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.65)" }}
+            >
               Power Tool
             </Typography>
           }
