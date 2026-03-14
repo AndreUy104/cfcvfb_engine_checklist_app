@@ -26,8 +26,6 @@ import {
 import ApparatusTab from "./ApparatusTab";
 import EquipmentTab from "./EquipmentTab";
 
-// ---- Types ---------------------------------------------------------------
-
 interface EngineCheckModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +33,6 @@ interface EngineCheckModalProps {
   assignedEquipment?: Partial<Equipment>[];
 }
 
-// ---- Mock data -----------------------------------------------------------
 
 const DEFAULT_EQUIPMENT: Partial<Equipment>[] = [
   { id: 1, name: "HOLMATRO CUTTER",    inService: 3  },
@@ -72,7 +69,6 @@ export default function EngineCheckModal({
     remarks: "",
   });
 
-  // ---- Handlers ----------------------------------------------------------
 
   function handleApparatusChange<K extends keyof ApparatusChecks>(
     key: K,
@@ -102,7 +98,6 @@ export default function EngineCheckModal({
     onClose();
   }
 
-  // ---- Shared sx ---------------------------------------------------------
 
   const tabSx = {
     color: "rgba(255,255,255,0.4)",
@@ -114,7 +109,6 @@ export default function EngineCheckModal({
     "&.Mui-selected": { color: theme.palette.secondary.main },
   };
 
-  // ---- Render ------------------------------------------------------------
 
   return (
     <Dialog

@@ -25,7 +25,8 @@ import {
   Group,
   Settings,
   Logout,
-  LocalFireDepartment
+  LocalFireDepartment,
+  Build
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation";
 
@@ -45,6 +46,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: <Dashboard />, route: "/Home"},
+    { id: "powerTools" , label: "Power Tools Inventory" , icon: <Build/> , route: "PowerTools" },
     { id: "inventory", label: "Inventory", icon: <Inventory />, route: "/Inventory"},
     { id: "reports", label: "Reports", icon: <Description /> },
     { id: "personnel", label: "Personnel", icon: <Group /> },

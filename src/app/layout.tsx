@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import ThemeRegistry from "@/theme/ThemeRegistry";
+import Sidebar from "@/components/Sidebar";
+import { Box } from "@mui/material";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeRegistry>{children}</ThemeRegistry>
+        <ThemeRegistry>
+          <Box sx={{ display: "flex", minHeight: "100vh" }}>
+            <Sidebar/>
+            {children}
+          </Box>
+        </ThemeRegistry>
       </body>
     </html>
   );

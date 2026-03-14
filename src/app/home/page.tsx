@@ -2,14 +2,11 @@
 
 import { useState } from "react";
 import ApparatusCard from "@/components/ApparatusCard";
-import Sidebar from "@/components/Sidebar";
 import EngineCheckModal from "@/components/EngineChecklistModal";
 import { Box, Button, Grid, Tab, Tabs, Typography } from "@mui/material";
 import { messageEnum } from "@/utilities/constants/message.constant";
 import { Apparatus } from "@/utilities/types/apparatus.types";
 import { Equipment } from "@/utilities/types/equipment.types";
-
-// ---- Types ---------------------------------------------------------------
 
 type ModalType = "engineCheck" | null;
 
@@ -18,8 +15,6 @@ interface ModalState {
   apparatus: Partial<Apparatus> | null;
   assignedEquipment: Partial<Equipment>[];
 }
-
-// ---- Mock data (replace with real API data) ------------------------------
 
 const APPARATUS_LIST = [
   { id: 1, title: "Engine 1",  status: "ready"    as const, type: "Fighting" },
@@ -47,7 +42,6 @@ const EQUIPMENT_BY_APPARATUS: Record<number, Partial<Equipment>[]> = {
   ],
 };
 
-// ---- Component -----------------------------------------------------------
 
 export default function HomePage() {
   const [tab, setTab] = useState(0);
@@ -77,9 +71,7 @@ export default function HomePage() {
       : APPARATUS_LIST;
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-
+    <>
       <Box
         component="main"
         sx={{
@@ -115,13 +107,13 @@ export default function HomePage() {
             </Typography>
           </Box>
 
-          <Button
+          {/* <Button
             variant="contained"
             color="secondary"
             sx={{ width: { xs: "100%", sm: "auto" }, mt: { xs: 1, sm: 0 } }}
           >
             + New Report
-          </Button>
+          </Button> */}
         </Box>
 
         {/* Tabs */}
@@ -161,6 +153,6 @@ export default function HomePage() {
         apparatus={modal.apparatus ?? undefined}
         assignedEquipment={modal.assignedEquipment}
       />
-    </Box>
+    </>
   );
 }

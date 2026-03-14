@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Sidebar from "@/components/Sidebar";
 import EquipmentTable from "@/components/EquipmentTable";
 import { getEquipmentColumns } from "@/components/EquipmentTable/columns";
 import { Equipment } from "@/utilities/types/equipment.types";
@@ -87,9 +86,7 @@ export default function InventoryPage() {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-
+    <>
       <Box
         component="main"
         sx={{
@@ -214,6 +211,6 @@ export default function InventoryPage() {
         apparatus={SAMPLE_APPARATUS}
         equipment={SAMPLE_DATA}
       />
-    </Box>
+    </>
   );
 }
