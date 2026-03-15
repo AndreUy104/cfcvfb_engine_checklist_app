@@ -1,71 +1,47 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import ApparatusCard from "@/components/ApparatusCard";
-import EngineCheckModal from "@/components/EngineChecklistModal";
-import { Box, Grid, Tab, Tabs, Typography } from "@mui/material";
-import { messageEnum } from "@/utilities/constants/message.constant";
-import { Apparatus } from "@/utilities/types/apparatus.types";
-import { Equipment } from "@/utilities/types/equipment.types";
+import { useState, useEffect } from "react"
+import ApparatusCard from "@/components/ApparatusCard"
+import EngineCheckModal from "@/components/EngineChecklistModal"
+import { Box, Grid, Tab, Tabs, Typography, CircularProgress, Alert } from "@mui/material"
+import { messageEnum } from "@/utilities/constants/message.constant"
+import { useEngine, type EngineWithType } from "@/hooks/useEngine"
+import { useEngineEquipment } from "@/hooks/useEngineEquipment"
 
-type ModalType = "engineCheck" | null;
+type ModalType = "engineCheck" | null
 
 interface ModalState {
-  type: ModalType;
-  apparatus: Partial<Apparatus> | null;
-  assignedEquipment: Partial<Equipment>[];
+  type: ModalType
+  engine: EngineWithType | null
 }
 
-const APPARATUS_LIST = [
-  { id: 1, title: "Engine 1", status: "ready" as const, type: "Fighting" },
-  { id: 2, title: "Ladder 5", status: "progress" as const, type: "Fighting" },
-  { id: 3, title: "Rescue 1", status: "alert" as const, type: "Tanker" },
-  { id: 4, title: "Engine 2", status: "ready" as const, type: "Fighting" },
-];
-
-const EQUIPMENT_BY_APPARATUS: Record<number, Partial<Equipment>[]> = {
-  1: [
-    { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
-    { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
-    { id: 3, name: "HALLIGAN BAR", inService: 6 },
-  ],
-  2: [
-    { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
-    { id: 5, name: "DEFIBRILLATOR LP15", inService: 3 },
-  ],
-  3: [{ id: 6, name: "HYDRAULIC SPREADER", inService: 1 }],
-  4: [
-    { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
-    { id: 7, name: "FORCIBLE ENTRY AXE", inService: 8 },
-  ],
-};
-
 export default function HomePage() {
-  const [tab, setTab] = useState(0);
-  const [modal, setModal] = useState<ModalState>({
-    type: null,
-    apparatus: null,
-    assignedEquipment: [],
-  });
+  const [tab, setTab] = useState(0)
+  const [modal, setModal] = useState<ModalState>({ type: null, engine: null })
 
-  function handleStartCheck(apparatus: Partial<Apparatus>, id: number) {
-    setModal({
-      type: "engineCheck",
-      apparatus,
-      assignedEquipment: EQUIPMENT_BY_APPARATUS[id] ?? [],
-    });
+  const { engines, loading, error, fetchEngines } = useEngine()
+  const { assignments, loading: equipmentLoading, fetchEquipmentByEngine } = useEngineEquipment()
+
+  useEffect(() => {
+    fetchEngines()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function handleStartCheck(engine: EngineWithType) {
+    setModal({ type: "engineCheck", engine })
+    await fetchEquipmentByEngine(engine.id)
   }
 
   function handleCloseModal() {
-    setModal({ type: null, apparatus: null, assignedEquipment: [] });
+    setModal({ type: null, engine: null })
   }
 
-  const filteredApparatus =
+  const filteredEngines =
     tab === 1
-      ? APPARATUS_LIST.filter((a) => a.type === "Fighting")
+      ? engines.filter((e) => e.Engine_type?.type === "Fighting")
       : tab === 2
-        ? APPARATUS_LIST.filter((a) => a.type === "Tanker")
-        : APPARATUS_LIST;
+        ? engines.filter((e) => e.Engine_type?.type === "Tanker")
+        : engines
 
   return (
     <>
@@ -103,14 +79,6 @@ export default function HomePage() {
               {messageEnum.DashboardDetails}
             </Typography>
           </Box>
-
-          {/* <Button
-            variant="contained"
-            color="secondary"
-            sx={{ width: { xs: "100%", sm: "auto" }, mt: { xs: 1, sm: 0 } }}
-          >
-            + New Report
-          </Button> */}
         </Box>
 
         {/* Tabs */}
@@ -129,34 +97,56 @@ export default function HomePage() {
           <Tab label="Tankers" />
         </Tabs>
 
+        {/* States */}
+        {loading && (
+          <Box display="flex" justifyContent="center" mt={6}>
+            <CircularProgress color="secondary" />
+          </Box>
+        )}
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
         {/* Grid */}
-        <Grid
-          container
-          spacing={{ xs: 2, sm: 3 }}
-          mt={1}
-          sx={{ p: { xs: 0, sm: 1, md: 3 } }}
-        >
-          {filteredApparatus.map((a) => (
-            <Grid key={a.id} size={{ xs: 12, sm: 6, md: 3 }}>
-              <ApparatusCard
-                title={a.title}
-                status={a.status}
-                onStartCheck={() =>
-                  handleStartCheck({ id: a.id, name: a.title }, a.id)
-                }
-              />
-            </Grid>
-          ))}
-        </Grid>
+        {!loading && !error && (
+          <Grid
+            container
+            spacing={{ xs: 2, sm: 3 }}
+            mt={1}
+            sx={{ p: { xs: 0, sm: 1, md: 3 } }}
+          >
+            {filteredEngines.length === 0 ? (
+              <Grid size={{ xs: 12 }}>
+                <Typography color="gray" textAlign="center">
+                  No engines found.
+                </Typography>
+              </Grid>
+            ) : (
+              filteredEngines.map((engine) => (
+                <Grid key={engine.id} size={{ xs: 12, sm: 6, md: 3 }}>
+                  <ApparatusCard
+                    title={engine.name ?? "Unnamed Engine"}
+                    status={engine.status as "ready" | "progress" | "alert" ?? "ready"}
+                    onStartCheck={() => handleStartCheck(engine)}
+                  />
+                </Grid>
+              ))
+            )}
+          </Grid>
+        )}
       </Box>
 
       {/* Engine Check Modal */}
       <EngineCheckModal
         isOpen={modal.type === "engineCheck"}
         onClose={handleCloseModal}
-        apparatus={modal.apparatus ?? undefined}
-        assignedEquipment={modal.assignedEquipment}
+        apparatus={modal.engine ? { id: modal.engine.id, name: modal.engine.name ?? "" } : undefined}
+        assignedEquipment={assignments}
+        equipmentLoading={equipmentLoading}
       />
     </>
-  );
+  )
 }

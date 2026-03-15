@@ -1,76 +1,68 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import EquipmentTable from "@/components/EquipmentTable";
-import { getEquipmentColumns } from "@/components/EquipmentTable/columns";
-import { Equipment } from "@/utilities/types/equipment.types";
-import { messageEnum } from "@/utilities/constants/message.constant";
-import { Box, Button, Typography } from "@mui/material";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
-import AddNewApparatusModal from "@/components/AddNewApparatusModal";
-import AddNewEquipmentModal from "@/components/AddNewEquipmentModal";
-import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal";
-import { Apparatus } from "@/utilities/types/apparatus.types";
+import { useEffect } from "react"
+import EquipmentTable from "@/components/EquipmentTable"
+import { getEquipmentColumns } from "@/components/EquipmentTable/columns"
+import { messageEnum } from "@/utilities/constants/message.constant"
+import { Box, Button, Typography, Alert, CircularProgress } from "@mui/material"
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined"
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline"
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined"
+import AddNewApparatusModal from "@/components/AddNewApparatusModal"
+import AddNewEquipmentModal from "@/components/AddNewEquipmentModal"
+import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal"
+import { useEquipment } from "@/hooks/useEquipment"
+import { useEngine } from "@/hooks/useEngine"
+import { Equipment } from "@/utilities/types/equipment.types"
+import { useState } from "react"
 
-const SAMPLE_DATA: Equipment[] = [
-  { id: 1, name: "HOLMATRO CUTTER", total: 4, inService: 3, down: 1 },
-  { id: 2, name: "SCBA PACK - GEN 3", total: 12, inService: 11, down: 1 },
-  { id: 3, name: "DEFIBRILLATOR LP15", total: 5, inService: 3, down: 2 },
-  { id: 4, name: "THERMAL CAMERA K65", total: 3, inService: 2, down: 1 },
-  { id: 5, name: "FORCIBLE ENTRY AXE", total: 8, inService: 8, down: 0 },
-  { id: 6, name: "HALLIGAN BAR", total: 6, inService: 6, down: 0 },
-  { id: 7, name: "HYDRAULIC SPREADER", total: 3, inService: 1, down: 2 },
-];
-
-const SAMPLE_APPARATUS: Partial<Apparatus>[] = [
-  { id: 1, name: "Engine 1" },
-  { id: 2, name: "Engine 2" },
-  { id: 3, name: "Tanker 1" },
-];
-
-type ModalType = "apparatus" | "equipment" | "assign";
+type ModalType = "apparatus" | "equipment" | "assign"
 
 interface ModalState {
-  type: ModalType | null;
+  type: ModalType | null
 }
 
 export default function InventoryPage() {
-  const [rows, setRows] = useState<Equipment[]>(SAMPLE_DATA);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [isOpen, setIsOpen] = useState<ModalState>({ type: null });
+  const {
+    equipments,
+    loading: equipmentLoading,
+    error: equipmentError,
+    fetchEquipments,
+    deleteEquipment,
+  } = useEquipment()
+
+  const {
+    engines,
+    loading: engineLoading,
+    error: engineError,
+    fetchEngines,
+  } = useEngine()
+
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [isOpen, setIsOpen] = useState<ModalState>({ type: null })
+
+  useEffect(() => {
+    fetchEquipments()
+    fetchEngines()
+  }, [])
 
   const columns = getEquipmentColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
-  });
+  })
 
   function handleEdit(item: Equipment) {
-    // TODO: open your edit modal / drawer
-    console.log("edit", item);
+    // TODO: open edit modal
+    console.log("edit", item)
   }
 
-  function handleDelete(item: Equipment) {
-    // TODO: open your confirm-delete modal
-    setRows((prev) => prev.filter((r) => r.id !== item.id));
-  }
-
-  function handleAddApparatus() {
-    setIsOpen({ type: "apparatus" });
-  }
-
-  function handleAddEquipment() {
-    setIsOpen({ type: "equipment" });
-  }
-
-  function handleAssignEquipment() {
-    setIsOpen({ type: "assign" });
+  async function handleDelete(item: Equipment) {
+    await deleteEquipment(item.id)
   }
 
   function handleCloseModal() {
-    setIsOpen({ type: null });
+    setIsOpen({ type: null })
   }
 
   const btnBaseSx = {
@@ -82,7 +74,7 @@ export default function InventoryPage() {
     px: 2,
     py: 1,
     width: { xs: "100%", sm: "auto" },
-  };
+  }
 
   return (
     <>
@@ -130,7 +122,7 @@ export default function InventoryPage() {
             <Button
               variant="outlined"
               startIcon={<LocalShippingOutlinedIcon fontSize="small" />}
-              onClick={handleAddApparatus}
+              onClick={() => setIsOpen({ type: "apparatus" })}
               sx={{
                 ...btnBaseSx,
                 color: "#dc2626",
@@ -148,7 +140,7 @@ export default function InventoryPage() {
             <Button
               variant="contained"
               startIcon={<AddCircleOutlineIcon fontSize="small" />}
-              onClick={handleAddEquipment}
+              onClick={() => setIsOpen({ type: "equipment" })}
               sx={{
                 ...btnBaseSx,
                 background: "#dc2626",
@@ -166,7 +158,7 @@ export default function InventoryPage() {
             <Button
               variant="outlined"
               startIcon={<AssignmentTurnedInOutlinedIcon fontSize="small" />}
-              onClick={handleAssignEquipment}
+              onClick={() => setIsOpen({ type: "assign" })}
               sx={{
                 ...btnBaseSx,
                 color: "text.secondary",
@@ -183,36 +175,48 @@ export default function InventoryPage() {
           </Box>
         </Box>
 
-        <EquipmentTable
-          columns={columns}
-          rows={rows.slice(
-            page * rowsPerPage,
-            page * rowsPerPage + rowsPerPage,
-          )}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          totalCount={rows.length}
-          onPageChange={setPage}
-          onRowsPerPageChange={(rpp) => {
-            setRowsPerPage(rpp);
-            setPage(0);
-          }}
-        />
+        {(equipmentError || engineError) && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {equipmentError ?? engineError}
+          </Alert>
+        )}
+
+        {equipmentLoading ? (
+          <Box display="flex" justifyContent="center" mt={6}>
+            <CircularProgress color="secondary" />
+          </Box>
+        ) : (
+          <EquipmentTable
+            columns={columns}
+            rows={equipments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            totalCount={equipments.length}
+            onPageChange={setPage}
+            onRowsPerPageChange={(rpp) => {
+              setRowsPerPage(rpp)
+              setPage(0)
+            }}
+          />
+        )}
       </Box>
+
       <AddNewApparatusModal
         isOpen={isOpen.type === "apparatus"}
         onClose={handleCloseModal}
+        onSuccess={fetchEngines}
       />
       <AddNewEquipmentModal
         isOpen={isOpen.type === "equipment"}
         onClose={handleCloseModal}
+        onSuccess={fetchEquipments}
       />
       <AssignEquipmentModal
         isOpen={isOpen.type === "assign"}
         onClose={handleCloseModal}
-        apparatus={SAMPLE_APPARATUS}
-        equipment={SAMPLE_DATA}
+        engines={engines}
+        equipments={equipments}
       />
     </>
-  );
+  )
 }

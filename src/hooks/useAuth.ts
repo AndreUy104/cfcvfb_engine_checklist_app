@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/library/supabase/client"
 import type { User } from "@supabase/supabase-js"
@@ -20,7 +20,7 @@ interface UseAuthReturn {
 
 export function useAuth(): UseAuthReturn {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
 
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)

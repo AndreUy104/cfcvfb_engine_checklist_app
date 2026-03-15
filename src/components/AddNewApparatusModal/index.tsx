@@ -1,58 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  MenuItem,
-  Button,
-  Typography,
-  IconButton,
-  Box,
-  Divider,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
-import { useTheme } from "@mui/material/styles";
-import { ApparatusFormData } from "@/utilities/types/apparatus.types";
-import { APPARATUS_TYPES } from "@/utilities/constants/apparatus.constant";
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  TextField, MenuItem, Button, Typography, IconButton,
+  Box, Divider, Alert, CircularProgress,
+} from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import AddIcon from "@mui/icons-material/Add"
+import { useTheme } from "@mui/material/styles"
+import { ApparatusFormData } from "@/utilities/types/apparatus.types"
+import { useEngine } from "@/hooks/useEngine"
+import { useEngineType } from "@/hooks/useEngineType"
 
 interface ApparatusModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: () => void
+}
+
+const DEFAULT_FORM: ApparatusFormData = {
+  name: "",
+  type: "",
+  water_capacity: "",
+  plate_number: "",
 }
 
 export default function AddNewApparatusModal({
   isOpen,
   onClose,
+  onSuccess,
 }: ApparatusModalProps) {
-  const theme = useTheme();
-  const [form, setForm] = useState<ApparatusFormData>({
-    name: "",
-    type: "",
-    waterCapacity: "",
-    licensePlate: "",
-  });
+  const theme = useTheme()
+  const { createEngine, loading, error } = useEngine()
+  const [form, setForm] = useState<ApparatusFormData>(DEFAULT_FORM)
+  const { engineTypes, fetchEngineTypes } = useEngineType()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    if (isOpen) fetchEngineTypes()
+  }, [isOpen])
 
-  const handleSubmit = () => {
-    console.log("Submitted:", form);
-    onClose();
-  };
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
+
+  async function handleSubmit() {
+    const success = await createEngine({
+      name: form.name,
+      type: form.type === "" ? null : Number(form.type),
+      water_capacity: form.water_capacity === "" ? null : Number(form.water_capacity),
+      plate_number: form.plate_number || null,
+    })
+
+    if (success) {
+      handleClose()
+      onSuccess?.()
+    }
+  }
+
+  function handleClose() {
+    setForm(DEFAULT_FORM)
+    onClose()
+  }
 
   const fieldSx = {
-    "& .MuiInputLabel-root": {
-      color: "rgba(255,255,255,0.5)",
-      fontWeight: 600,
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: theme.palette.secondary.main,
-    },
+    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
+    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -62,12 +74,12 @@ export default function AddNewApparatusModal({
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
     "& .MuiSelect-icon": { color: theme.palette.secondary.main },
-  };
+  }
 
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       maxWidth="sm"
       fullWidth
       PaperProps={{
@@ -79,56 +91,32 @@ export default function AddNewApparatusModal({
         },
       }}
     >
-      {/* Header */}
       <DialogTitle
         sx={{
           bgcolor: `${theme.palette.primary.main}cc`,
           borderBottom: `1px solid ${theme.palette.secondary.main}25`,
-          px: 3,
-          py: 1.5,
+          px: 3, py: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
         }}
       >
         <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              color: "#f0f0f0",
-            }}
-          >
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#f0f0f0" }}>
             Add New Apparatus
           </Typography>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
             Register a new vehicle to the fleet
           </Typography>
         </Box>
-        <IconButton
-          size="small"
-          onClick={onClose}
-          sx={{
-            color: "rgba(255,255,255,0.4)",
-            "&:hover": { color: "#fff" },
-          }}
-        >
+        <IconButton size="small" onClick={handleClose} sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
-      {/* Body */}
-      <DialogContent
-        sx={{
-          px: 3,
-          py: 2.5,
-          display: "flex",
-          flexDirection: "column",
-          gap: 2.5,
-        }}
-      >
+      <DialogContent sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}>
+        {error && <Alert severity="error">{error}</Alert>}
+
         <TextField
           label="Apparatus Name"
           name="name"
@@ -153,19 +141,19 @@ export default function AddNewApparatusModal({
           <MenuItem value="" disabled sx={{ color: "rgba(255,255,255,0.3)" }}>
             Select vehicle type
           </MenuItem>
-          {APPARATUS_TYPES.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
+          {engineTypes.map((t) => (
+            <MenuItem key={t.id} value={t.id}>
+              {t.type}
             </MenuItem>
           ))}
         </TextField>
 
         <TextField
-          label="Water Capacity (Ton)"
-          name="waterCapacity"
+          label="Water Capacity (Liters)"
+          name="water_capacity"
           type="number"
           placeholder="e.g., 500"
-          value={form.waterCapacity}
+          value={form.water_capacity}
           onChange={handleChange}
           fullWidth
           variant="outlined"
@@ -175,9 +163,9 @@ export default function AddNewApparatusModal({
 
         <TextField
           label="License Plate"
-          name="licensePlate"
+          name="plate_number"
           placeholder="Enter identification number"
-          value={form.licensePlate}
+          value={form.plate_number}
           onChange={handleChange}
           fullWidth
           variant="outlined"
@@ -187,35 +175,21 @@ export default function AddNewApparatusModal({
 
       <Divider sx={{ borderColor: `${theme.palette.secondary.main}20` }} />
 
-      {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{
-            color: "rgba(255,255,255,0.5)",
-            borderColor: "rgba(255,255,255,0.15)",
-            "&:hover": {
-              borderColor: "rgba(255,255,255,0.35)",
-              color: "rgba(255,255,255,0.85)",
-            },
-          }}
-        >
+        <Button onClick={handleClose} variant="outlined" sx={{ color: "rgba(255,255,255,0.5)", borderColor: "rgba(255,255,255,0.15)", "&:hover": { borderColor: "rgba(255,255,255,0.35)", color: "rgba(255,255,255,0.85)" } }}>
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
           color="secondary"
-          startIcon={<AddIcon />}
-          sx={{
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-          }}
+          startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <AddIcon />}
+          disabled={loading || !form.name || form.type === ""}
+          sx={{ fontWeight: 700, letterSpacing: "0.06em" }}
         >
           Add Apparatus
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }

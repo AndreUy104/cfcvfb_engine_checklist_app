@@ -1,6 +1,5 @@
 import { Box, TextField, Typography } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Equipment } from "@/utilities/types/equipment.types";
 import {
   EquipmentCheck,
   EquipmentStatus,
@@ -24,12 +23,12 @@ const equipmentStatusColors: Record<
 };
 
 interface EquipmentTabProps {
-  equipmentChecks: EquipmentCheck[];
+  equipmentChecks: EquipmentCheck[]
   onChange: (
-    id: Equipment["id"],
-    field: keyof EquipmentCheck,
+    engineEquipmentId: EquipmentCheck["engineEquipmentId"],
+    field: "status" | "notes",
     value: string | null,
-  ) => void;
+  ) => void
 }
 
 export default function EquipmentTab({
@@ -73,7 +72,7 @@ export default function EquipmentTab({
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       {equipmentChecks.map((eq) => (
         <Box
-          key={eq.id}
+          key={eq.engineEquipmentId}
           sx={{
             py: 1.5,
             borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -105,14 +104,14 @@ export default function EquipmentTab({
             <StatusToggle
               options={["Serviceable", "Down"] as const}
               value={eq.status}
-              onChange={(v) => onChange(eq.id, "status", v as EquipmentStatus)}
+              onChange={(v) => onChange(eq.engineEquipmentId, "status", v as EquipmentStatus)}
               colorMap={equipmentStatusColors}
             />
           </Box>
           <TextField
             placeholder="Notes (optional)"
             value={eq.notes}
-            onChange={(e) => onChange(eq.id, "notes", e.target.value)}
+            onChange={(e) => onChange(eq.engineEquipmentId, "notes", e.target.value)}
             size="small"
             fullWidth
             sx={noteFieldSx}

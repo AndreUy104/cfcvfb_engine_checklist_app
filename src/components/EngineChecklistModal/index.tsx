@@ -1,72 +1,78 @@
-import { useState } from "react";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react"
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-  IconButton,
-  Box,
-  Divider,
-  Tab,
-  Tabs,
-  TextField,
-  useMediaQuery,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
-import { useTheme } from "@mui/material/styles";
-import { Apparatus } from "@/utilities/types/apparatus.types";
-import { Equipment } from "@/utilities/types/equipment.types";
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, Typography, IconButton, Box, Divider,
+  Tab, Tabs, TextField, useMediaQuery, CircularProgress,
+} from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl"
+import { useTheme } from "@mui/material/styles"
+import { Tables } from "@/utilities/types/database"
 import {
-  ApparatusChecks,
-  EngineCheckFormData,
-} from "@/utilities/types/engineCheck.types";
-import ApparatusTab from "./ApparatusTab";
-import EquipmentTab from "./EquipmentTab";
+  ApparatusChecks, EngineCheckFormData, EquipmentCheck,
+} from "@/utilities/types/engineCheck.types"
+import ApparatusTab from "./ApparatusTab"
+import EquipmentTab from "./EquipmentTab"
+import { EngineEquipmentWithDetails } from "@/utilities/types/engineEquipment.types"
 
 interface EngineCheckModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  apparatus?: Partial<Apparatus>;
-  assignedEquipment?: Partial<Equipment>[];
+  isOpen: boolean
+  onClose: () => void
+  apparatus?: Pick<Tables<"Engines">, "id" | "name">
+  assignedEquipment?: EngineEquipmentWithDetails[]
+  equipmentLoading?: boolean
 }
 
-const DEFAULT_EQUIPMENT: Partial<Equipment>[] = [
-  { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
-  { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
-  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3 },
-  { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
-  { id: 5, name: "HALLIGAN BAR", inService: 6 },
-];
+const DEFAULT_APPARATUS_CHECKS: ApparatusChecks = {
+  waterLevel: "Empty",
+  fuelLevel: "Empty",
+  lightsAndSiren: null,
+  batteryStatus: null,
+  communicationRadio: null,
+}
 
 export default function EngineCheckModal({
   isOpen,
   onClose,
-  apparatus = { id: 1, name: "Engine 1" },
-  assignedEquipment = DEFAULT_EQUIPMENT,
+  apparatus,
+  assignedEquipment = [],
+  equipmentLoading = false,
 }: EngineCheckModalProps) {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<EngineCheckFormData>({
-    apparatusChecks: {
-      waterLevel: "Empty",
-      fuelLevel: "Empty",
-      lightsAndSiren: null,
-      batteryStatus: null,
-      communicationRadio: null,
-    },
-    equipmentChecks: assignedEquipment.map((eq) => ({
-      id: eq.id!,
-      name: eq.name ?? "",
-      status: null,
-      notes: "",
-    })),
+    apparatusChecks: DEFAULT_APPARATUS_CHECKS,
+    equipmentChecks: [],
     remarks: "",
-  });
+  })
+
+  // Rebuild equipment checks when assignedEquipment changes
+  useEffect(() => {
+    setForm((prev) => ({
+      ...prev,
+      equipmentChecks: assignedEquipment.map((ae): EquipmentCheck => ({
+        engineEquipmentId: ae.id,
+        name: ae.Equipments?.name ?? "Unknown Equipment",
+        status: null,
+        notes: "",
+      })),
+    }))
+  }, [assignedEquipment])
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveTab(0)
+      setForm({
+        apparatusChecks: DEFAULT_APPARATUS_CHECKS,
+        equipmentChecks: [],
+        remarks: "",
+      })
+    }
+  }, [isOpen])
 
   function handleApparatusChange<K extends keyof ApparatusChecks>(
     key: K,
@@ -75,25 +81,27 @@ export default function EngineCheckModal({
     setForm((prev) => ({
       ...prev,
       apparatusChecks: { ...prev.apparatusChecks, [key]: value },
-    }));
+    }))
   }
 
   function handleEquipmentChange(
-    id: Equipment["id"],
-    field: keyof (typeof form.equipmentChecks)[number],
+    engineEquipmentId: EquipmentCheck["engineEquipmentId"],
+    field: "status" | "notes",
     value: string | null,
   ) {
     setForm((prev) => ({
       ...prev,
       equipmentChecks: prev.equipmentChecks.map((eq) =>
-        eq.id === id ? { ...eq, [field]: value } : eq,
+        eq.engineEquipmentId === engineEquipmentId
+          ? { ...eq, [field]: value }
+          : eq
       ),
-    }));
+    }))
   }
 
   function handleSubmit() {
-    console.log("Engine Check Submitted:", form);
-    onClose();
+    console.log("Engine Check Submitted:", form)
+    onClose()
   }
 
   const tabSx = {
@@ -104,7 +112,7 @@ export default function EngineCheckModal({
     textTransform: "uppercase" as const,
     minHeight: 40,
     "&.Mui-selected": { color: theme.palette.secondary.main },
-  };
+  }
 
   return (
     <Dialog
@@ -164,12 +172,7 @@ export default function EngineCheckModal({
       </DialogTitle>
 
       {/* Tabs */}
-      <Box
-        sx={{
-          borderBottom: `1px solid ${theme.palette.secondary.main}20`,
-          flexShrink: 0,
-        }}
-      >
+      <Box sx={{ borderBottom: `1px solid ${theme.palette.secondary.main}20`, flexShrink: 0 }}>
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
@@ -188,14 +191,7 @@ export default function EngineCheckModal({
       </Box>
 
       {/* Body */}
-      <DialogContent
-        sx={{
-          px: 3,
-          py: 2,
-          overflowY: "auto",
-          flexGrow: 1,
-        }}
-      >
+      <DialogContent sx={{ px: 3, py: 2, overflowY: "auto", flexGrow: 1 }}>
         {activeTab === 0 && (
           <ApparatusTab
             checks={form.apparatusChecks}
@@ -203,37 +199,34 @@ export default function EngineCheckModal({
           />
         )}
         {activeTab === 1 && (
-          <EquipmentTab
-            equipmentChecks={form.equipmentChecks}
-            onChange={handleEquipmentChange}
-          />
+          equipmentLoading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" py={6}>
+              <CircularProgress color="secondary" size={32} />
+            </Box>
+          ) : (
+            <EquipmentTab
+              equipmentChecks={form.equipmentChecks}
+              onChange={handleEquipmentChange}
+            />
+          )
         )}
       </DialogContent>
 
-      {/* Remarks — always visible */}
+      {/* Remarks */}
       <Box sx={{ px: 3, pt: 1.5, pb: 1, flexShrink: 0 }}>
-        <Divider
-          sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }}
-        />
+        <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, mb: 1.5 }} />
         <TextField
           label="Remarks"
           placeholder="Any additional observations or notes..."
           value={form.remarks}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, remarks: e.target.value }))
-          }
+          onChange={(e) => setForm((prev) => ({ ...prev, remarks: e.target.value }))}
           fullWidth
           multiline
           rows={2}
           variant="outlined"
           sx={{
-            "& .MuiInputLabel-root": {
-              color: "rgba(255,255,255,0.5)",
-              fontWeight: 600,
-            },
-            "& .MuiInputLabel-root.Mui-focused": {
-              color: theme.palette.secondary.main,
-            },
+            "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
+            "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
             "& .MuiOutlinedInput-root": {
               color: "#e8e8e8",
               bgcolor: "rgba(255,255,255,0.04)",
@@ -241,17 +234,13 @@ export default function EngineCheckModal({
               fontSize: "0.875rem",
               "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
               "&:hover fieldset": { borderColor: "rgba(255,255,255,0.25)" },
-              "&.Mui-focused fieldset": {
-                borderColor: theme.palette.secondary.main,
-              },
+              "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
             },
           }}
         />
       </Box>
 
-      <Divider
-        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
-      />
+      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
 
       {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>
@@ -280,5 +269,5 @@ export default function EngineCheckModal({
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }

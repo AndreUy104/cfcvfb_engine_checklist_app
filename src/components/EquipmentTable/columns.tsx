@@ -49,24 +49,24 @@ export function getEquipmentColumns(options?: {
     },
 
     {
-      key: "total",
+      key: "total_quantity",
       label: "Total",
       align: "center",
-      renderCell: (row) => <StatBadge value={row.total} />,
+      renderCell: (row) => <StatBadge value={row.total_quantity ?? 0} />,
     },
 
     {
-      key: "inService",
+      key: "total_in_service",
       label: "In Service",
       align: "center",
-      renderCell: (row) => <StatBadge value={row.inService} />,
+      renderCell: (row) => <StatBadge value={row.total_in_service ?? 0} />,
     },
 
     {
-      key: "down",
+      key: "total_down",
       label: "Down / Busted",
       align: "center",
-      renderCell: (row) => <StatBadge value={row.down} />,
+      renderCell: (row) => <StatBadge value={row.total_down ?? 0} />,
     },
 
     {
