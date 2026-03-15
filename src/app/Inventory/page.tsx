@@ -19,7 +19,6 @@ import AddNewEquipmentModal from "@/components/AddNewEquipmentModal";
 import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal";
 import { useEquipment } from "@/hooks/useEquipment";
 import { useEngine } from "@/hooks/useEngine";
-import { Equipment } from "@/utilities/types/equipment.types";
 import { useState } from "react";
 
 type ModalType = "apparatus" | "equipment" | "assign";
@@ -34,7 +33,6 @@ export default function InventoryPage() {
     loading: equipmentLoading,
     error: equipmentError,
     fetchEquipments,
-    deleteEquipment,
   } = useEquipment();
 
   const {
@@ -53,19 +51,7 @@ export default function InventoryPage() {
     fetchEngines();
   }, []);
 
-  const columns = getEquipmentColumns({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-  });
-
-  function handleEdit(item: Equipment) {
-    // TODO: open edit modal
-    console.log("edit", item);
-  }
-
-  async function handleDelete(item: Equipment) {
-    await deleteEquipment(item.id);
-  }
+  const columns = getEquipmentColumns();
 
   function handleCloseModal() {
     setIsOpen({ type: null });

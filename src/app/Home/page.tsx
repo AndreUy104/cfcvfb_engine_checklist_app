@@ -141,6 +141,7 @@ export default function HomePage() {
               filteredEngines.map((engine) => (
                 <Grid key={engine.id} size={{ xs: 12, sm: 6, md: 3 }}>
                   <ApparatusCard
+                    id={engine.id}
                     title={engine.name ?? "Unnamed Engine"}
                     status={
                       (engine.status as "ready" | "progress" | "alert") ??
