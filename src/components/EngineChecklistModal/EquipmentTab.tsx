@@ -23,12 +23,12 @@ const equipmentStatusColors: Record<
 };
 
 interface EquipmentTabProps {
-  equipmentChecks: EquipmentCheck[]
+  equipmentChecks: EquipmentCheck[];
   onChange: (
     engineEquipmentId: EquipmentCheck["engineEquipmentId"],
     field: "status" | "notes",
     value: string | null,
-  ) => void
+  ) => void;
 }
 
 export default function EquipmentTab({
@@ -104,14 +104,18 @@ export default function EquipmentTab({
             <StatusToggle
               options={["Serviceable", "Down"] as const}
               value={eq.status}
-              onChange={(v) => onChange(eq.engineEquipmentId, "status", v as EquipmentStatus)}
+              onChange={(v) =>
+                onChange(eq.engineEquipmentId, "status", v as EquipmentStatus)
+              }
               colorMap={equipmentStatusColors}
             />
           </Box>
           <TextField
             placeholder="Notes (optional)"
             value={eq.notes}
-            onChange={(e) => onChange(eq.engineEquipmentId, "notes", e.target.value)}
+            onChange={(e) =>
+              onChange(eq.engineEquipmentId, "notes", e.target.value)
+            }
             size="small"
             fullWidth
             sx={noteFieldSx}

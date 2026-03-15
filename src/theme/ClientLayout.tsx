@@ -4,7 +4,11 @@ import { usePathname } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import { Box } from "@mui/material";
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/";
 

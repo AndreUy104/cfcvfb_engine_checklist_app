@@ -1,40 +1,52 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import ApparatusCard from "@/components/ApparatusCard"
-import EngineCheckModal from "@/components/EngineChecklistModal"
-import { Box, Grid, Tab, Tabs, Typography, CircularProgress, Alert } from "@mui/material"
-import { messageEnum } from "@/utilities/constants/message.constant"
-import { useEngine } from "@/hooks/useEngine"
-import { useEngineEquipment } from "@/hooks/useEngineEquipment"
-import { EngineWithType } from "@/utilities/types/engine.types"
+import { useState, useEffect } from "react";
+import ApparatusCard from "@/components/ApparatusCard";
+import EngineCheckModal from "@/components/EngineChecklistModal";
+import {
+  Box,
+  Grid,
+  Tab,
+  Tabs,
+  Typography,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import { messageEnum } from "@/utilities/constants/message.constant";
+import { useEngine } from "@/hooks/useEngine";
+import { useEngineEquipment } from "@/hooks/useEngineEquipment";
+import { EngineWithType } from "@/utilities/types/engine.types";
 
-type ModalType = "engineCheck" | null
+type ModalType = "engineCheck" | null;
 
 interface ModalState {
-  type: ModalType
-  engine: EngineWithType | null
+  type: ModalType;
+  engine: EngineWithType | null;
 }
 
 export default function HomePage() {
-  const [tab, setTab] = useState(0)
-  const [modal, setModal] = useState<ModalState>({ type: null, engine: null })
+  const [tab, setTab] = useState(0);
+  const [modal, setModal] = useState<ModalState>({ type: null, engine: null });
 
-  const { engines, loading, error, fetchEngines } = useEngine()
-  const { assignments, loading: equipmentLoading, fetchEquipmentByEngine } = useEngineEquipment()
+  const { engines, loading, error, fetchEngines } = useEngine();
+  const {
+    assignments,
+    loading: equipmentLoading,
+    fetchEquipmentByEngine,
+  } = useEngineEquipment();
 
   useEffect(() => {
-    fetchEngines()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    fetchEngines();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleStartCheck(engine: EngineWithType) {
-    setModal({ type: "engineCheck", engine })
-    await fetchEquipmentByEngine(engine.id)
+    setModal({ type: "engineCheck", engine });
+    await fetchEquipmentByEngine(engine.id);
   }
 
   function handleCloseModal() {
-    setModal({ type: null, engine: null })
+    setModal({ type: null, engine: null });
   }
 
   const filteredEngines =
@@ -42,7 +54,7 @@ export default function HomePage() {
       ? engines.filter((e) => e.Engine_type?.type === "Fighting")
       : tab === 2
         ? engines.filter((e) => e.Engine_type?.type === "Tanker")
-        : engines
+        : engines;
 
   return (
     <>
@@ -130,7 +142,10 @@ export default function HomePage() {
                 <Grid key={engine.id} size={{ xs: 12, sm: 6, md: 3 }}>
                   <ApparatusCard
                     title={engine.name ?? "Unnamed Engine"}
-                    status={engine.status as "ready" | "progress" | "alert" ?? "ready"}
+                    status={
+                      (engine.status as "ready" | "progress" | "alert") ??
+                      "ready"
+                    }
                     onStartCheck={() => handleStartCheck(engine)}
                   />
                 </Grid>
@@ -144,10 +159,14 @@ export default function HomePage() {
       <EngineCheckModal
         isOpen={modal.type === "engineCheck"}
         onClose={handleCloseModal}
-        apparatus={modal.engine ? { id: modal.engine.id, name: modal.engine.name ?? "" } : undefined}
+        apparatus={
+          modal.engine
+            ? { id: modal.engine.id, name: modal.engine.name ?? "" }
+            : undefined
+        }
         assignedEquipment={assignments}
         equipmentLoading={equipmentLoading}
       />
     </>
-  )
+  );
 }

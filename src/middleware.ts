@@ -1,16 +1,16 @@
-import { updateSession } from "./library/supabase/middleware"
-import { NextRequest } from "next/server"
+import { updateSession } from "./library/supabase/middleware";
+import { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = updateSession(request)
+  const { supabase, response } = updateSession(request);
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user && request.nextUrl.pathname.startsWith("/Home")) {
-    return Response.redirect(new URL("/", request.url))
+    return Response.redirect(new URL("/", request.url));
   }
 
-  return response
+  return response;
 }

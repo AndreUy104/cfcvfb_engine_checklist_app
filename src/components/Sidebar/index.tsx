@@ -41,7 +41,7 @@ export default function Sidebar() {
 
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState("dashboard");
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const toggleDrawer = () => setOpen(!open);
 
@@ -64,7 +64,7 @@ export default function Sidebar() {
       icon: <Inventory />,
       route: "/Inventory",
     },
-    { id: "reports",   label: "Reports",   icon: <Description /> },
+    { id: "reports", label: "Reports", icon: <Description /> },
     { id: "personnel", label: "Personnel", icon: <Group /> },
   ];
 

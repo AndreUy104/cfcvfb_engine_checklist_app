@@ -1,38 +1,49 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useState } from "react"
+import { useEffect } from "react";
+import { useState } from "react";
 import {
-  Box, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Typography, Paper, CircularProgress, Alert,
-} from "@mui/material"
-import { getPowerToolColumns } from "./columns"
-import { Equipment } from "@/utilities/types/equipment.types"
-import PowerToolCheckModal from "../PowerToolsChecklistModal"
-import { useEquipment } from "@/hooks/useEquipment"
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Paper,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import { getPowerToolColumns } from "./columns";
+import { Equipment } from "@/utilities/types/equipment.types";
+import PowerToolCheckModal from "../PowerToolsChecklistModal";
+import { useEquipment } from "@/hooks/useEquipment";
 
 export default function PowerToolsCheckTable() {
-  const { powerTools, loading, error, fetchPowerTools } = useEquipment()
+  const { powerTools, loading, error, fetchPowerTools } = useEquipment();
 
-  const [selectedTool, setSelectedTool] = useState<Equipment | null>(null)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedTool, setSelectedTool] = useState<Equipment | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
-    fetchPowerTools()
-  }, [])
+    fetchPowerTools();
+  }, []);
 
   function handleCheck(tool: Equipment) {
-    setSelectedTool(tool)
-    setModalOpen(true)
+    setSelectedTool(tool);
+    setModalOpen(true);
   }
 
   function handleCloseModal() {
-    setModalOpen(false)
-    setSelectedTool(null)
+    setModalOpen(false);
+    setSelectedTool(null);
   }
 
-  const columns = getPowerToolColumns({ onCheck: handleCheck })
-  const downCount = powerTools.filter((t) => t.total_down && t.total_down > 0).length
+  const columns = getPowerToolColumns({ onCheck: handleCheck });
+  const downCount = powerTools.filter(
+    (t) => t.total_down && t.total_down > 0,
+  ).length;
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
@@ -73,7 +84,11 @@ export default function PowerToolsCheckTable() {
       )}
 
       {/* Error */}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Table */}
       {!loading && !error && (
@@ -113,7 +128,11 @@ export default function PowerToolsCheckTable() {
             <TableBody>
               {powerTools.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length} align="center" sx={{ py: 4, color: "text.disabled" }}>
+                  <TableCell
+                    colSpan={columns.length}
+                    align="center"
+                    sx={{ py: 4, color: "text.disabled" }}
+                  >
                     No power tools found.
                   </TableCell>
                 </TableRow>
@@ -124,7 +143,9 @@ export default function PowerToolsCheckTable() {
                     hover
                     sx={{
                       "&:last-child td": { border: 0 },
-                      "& td": { borderBottom: "1px solid rgba(255,255,255,0.05)" },
+                      "& td": {
+                        borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      },
                     }}
                   >
                     {columns.map((col) => (
@@ -150,11 +171,7 @@ export default function PowerToolsCheckTable() {
         open={modalOpen}
         tool={selectedTool}
         onClose={handleCloseModal}
-        onSubmit={(data) => {
-          console.log("Tool check submitted:", data)
-          handleCloseModal()
-        }}
       />
     </Box>
-  )
+  );
 }
