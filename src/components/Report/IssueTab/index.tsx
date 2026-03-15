@@ -9,21 +9,19 @@ import {
   TableRow,
   Typography,
   Paper,
-  Button,
   Chip,
   IconButton,
   Tooltip,
   CircularProgress,
   Alert,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   IssueWithDetails,
   IssueStatus,
   IssuePriority,
 } from "@/utilities/types/issues.types";
-import ReportIssueModal from "./ReportIssueModal";
 import IssueDetailModal from "./IssueDetailModal";
 
 interface IssuesTabProps {
@@ -46,29 +44,13 @@ const PRIORITY_COLORS: Record<IssuePriority, "success" | "warning" | "error"> =
     High: "error",
   };
 
-export default function IssuesTab({
-  issues,
-  loading,
-  error,
-  onRefresh,
-}: IssuesTabProps) {
-  const [reportModalOpen, setReportModalOpen] = useState(false);
+export default function IssuesTab({ issues, loading, error }: IssuesTabProps) {
   const [selectedIssue, setSelectedIssue] = useState<IssueWithDetails | null>(
     null,
   );
 
   return (
     <>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setReportModalOpen(true)}
-        >
-          Report Issue
-        </Button>
-      </Box>
-
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -174,12 +156,6 @@ export default function IssuesTab({
           </Table>
         </TableContainer>
       )}
-
-      <ReportIssueModal
-        isOpen={reportModalOpen}
-        onClose={() => setReportModalOpen(false)}
-        onSuccess={onRefresh}
-      />
 
       <IssueDetailModal
         isOpen={Boolean(selectedIssue)}

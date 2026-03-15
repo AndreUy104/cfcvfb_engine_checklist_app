@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 import {
   Dialog,
   DialogTitle,
@@ -28,7 +29,6 @@ import { useEquipment } from "@/hooks/useEquipment";
 interface ReportIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
 const ISSUE_TYPES: IssueType[] = [
@@ -52,7 +52,6 @@ const INITIAL_FORM: IssueFormData = {
 export default function ReportIssueModal({
   isOpen,
   onClose,
-  onSuccess,
 }: ReportIssueModalProps) {
   const { submitIssue, loading, error } = useIssues();
   const { engines, fetchEngines } = useEngine();
@@ -85,10 +84,14 @@ export default function ReportIssueModal({
 
   async function handleSubmit() {
     if (!form.type || !form.title) return;
+
     const success = await submitIssue(form);
+
     if (success) {
       handleClose();
-      onSuccess();
+      toast.success("Issue submitted successfully");
+    } else {
+      toast.error("Failed to submit issue");
     }
   }
 

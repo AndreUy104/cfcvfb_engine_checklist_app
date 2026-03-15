@@ -11,11 +11,14 @@ import {
   Typography,
   CircularProgress,
   Alert,
+  Button,
 } from "@mui/material";
 import { messageEnum } from "@/utilities/constants/message.constant";
 import { useEngine } from "@/hooks/useEngine";
 import { useEngineEquipment } from "@/hooks/useEngineEquipment";
 import { EngineWithType } from "@/utilities/types/engine.types";
+import AddIcon from "@mui/icons-material/Add";
+import ReportIssueModal from "@/components/Report/IssueTab/ReportIssueModal";
 
 type ModalType = "engineCheck" | null;
 
@@ -26,6 +29,7 @@ interface ModalState {
 
 export default function HomePage() {
   const [tab, setTab] = useState(0);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
   const [modal, setModal] = useState<ModalState>({ type: null, engine: null });
 
   const { engines, loading, error, fetchEngines } = useEngine();
@@ -92,6 +96,15 @@ export default function HomePage() {
               {messageEnum.DashboardDetails}
             </Typography>
           </Box>
+        </Box>
+        <Box display="flex" justifyContent="flex-end" mb={2}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setReportModalOpen(true)}
+          >
+            Report Issue
+          </Button>
         </Box>
 
         {/* Tabs */}
@@ -167,6 +180,11 @@ export default function HomePage() {
         }
         assignedEquipment={assignments}
         equipmentLoading={equipmentLoading}
+      />
+
+      <ReportIssueModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
       />
     </>
   );
