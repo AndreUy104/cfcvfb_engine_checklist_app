@@ -64,7 +64,12 @@ export default function Sidebar() {
       icon: <Inventory />,
       route: "/Inventory",
     },
-    { id: "reports", label: "Reports", icon: <Description /> },
+    {
+      id: "reports",
+      label: "Reports",
+      icon: <Description />,
+      route: "/Reports",
+    },
     { id: "personnel", label: "Personnel", icon: <Group /> },
   ];
 

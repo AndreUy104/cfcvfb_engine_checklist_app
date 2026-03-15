@@ -9,6 +9,7 @@ export type InspectionEquipmentResultInsert =
 
 export type InspectionWithDetails = Inspection & {
   Users: Pick<Tables<"Users">, "id" | "name" | "unit_number"> | null;
+  Engines: Pick<Tables<"Engines">, "id" | "name"> | null;
   Inspection_Equipment_Results: (InspectionEquipmentResult & {
     Engines_Equipment:
       | (Tables<"Engines_Equipment"> & {
@@ -18,7 +19,6 @@ export type InspectionWithDetails = Inspection & {
   })[];
 };
 
-// Power Tool Inspection
 export type PowerToolInspection = Tables<"PowerTool_Inspections">;
 export type PowerToolInspectionInsert = TablesInsert<"PowerTool_Inspections">;
 
