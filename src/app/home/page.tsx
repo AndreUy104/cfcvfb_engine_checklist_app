@@ -5,8 +5,9 @@ import ApparatusCard from "@/components/ApparatusCard"
 import EngineCheckModal from "@/components/EngineChecklistModal"
 import { Box, Grid, Tab, Tabs, Typography, CircularProgress, Alert } from "@mui/material"
 import { messageEnum } from "@/utilities/constants/message.constant"
-import { useEngine, type EngineWithType } from "@/hooks/useEngine"
+import { useEngine } from "@/hooks/useEngine"
 import { useEngineEquipment } from "@/hooks/useEngineEquipment"
+import { EngineWithType } from "@/utilities/types/engine.types"
 
 type ModalType = "engineCheck" | null
 
