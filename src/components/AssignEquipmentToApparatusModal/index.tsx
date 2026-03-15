@@ -19,6 +19,7 @@ import {
   TableHead,
   TableRow,
   Chip,
+  Collapse,
   useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -28,11 +29,12 @@ import { Apparatus } from "@/utilities/types/apparatus.types";
 import { Equipment } from "@/utilities/types/equipment.types";
 
 interface SelectedEquipment {
-  id: Equipment["id"];
-  qty: number;
+  equipment_id: Equipment["id"];
+  quantity_assigned: number;
+  location_on_truck: string | null;
 }
 
-interface AssignEquipmentModalProps {
+interface AssignEquipmentToApparatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   apparatus?: Partial<Apparatus>[];
@@ -46,30 +48,26 @@ const DEFAULT_APPARATUS: Partial<Apparatus>[] = [
 ];
 
 const DEFAULT_EQUIPMENT: Partial<Equipment>[] = [
-  { id: 1, name: "HOLMATRO CUTTER", inService: 3 },
-  { id: 2, name: "SCBA PACK - GEN 3", inService: 11 },
-  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3 },
-  { id: 4, name: "THERMAL CAMERA K65", inService: 2 },
-  { id: 5, name: "FORCIBLE ENTRY AXE", inService: 8 },
-  { id: 6, name: "HALLIGAN BAR", inService: 6 },
-  { id: 7, name: "HYDRAULIC SPREADER", inService: 1 },
+  { id: 1, name: "HOLMATRO CUTTER",    inService: 3  },
+  { id: 2, name: "SCBA PACK - GEN 3",  inService: 11 },
+  { id: 3, name: "DEFIBRILLATOR LP15", inService: 3  },
+  { id: 4, name: "THERMAL CAMERA K65", inService: 2  },
+  { id: 5, name: "FORCIBLE ENTRY AXE", inService: 8  },
+  { id: 6, name: "HALLIGAN BAR",        inService: 6  },
+  { id: 7, name: "HYDRAULIC SPREADER",  inService: 1  },
 ];
 
-export default function AssignEquipmentModal({
+export default function AssignEquipmentToApparatusModal({
   isOpen,
   onClose,
   apparatus = DEFAULT_APPARATUS,
   equipment = DEFAULT_EQUIPMENT,
-}: AssignEquipmentModalProps) {
+}: AssignEquipmentToApparatusModalProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [selectedApparatus, setSelectedApparatus] = useState<
-    Apparatus["id"] | ""
-  >("");
-  const [selected, setSelected] = useState<
-    Record<string | number, SelectedEquipment>
-  >({});
+  const [selectedApparatus, setSelectedApparatus] = useState<Apparatus["id"] | "">("");
+  const [selected, setSelected] = useState<Record<Equipment["id"], SelectedEquipment>>({});
 
   const selectedCount = Object.keys(selected).length;
 
@@ -81,15 +79,23 @@ export default function AssignEquipmentModal({
         delete next[eq.id!];
         return next;
       }
-      return { ...prev, [eq.id!]: { id: eq.id!, qty: 1 } };
+      return { ...prev, [eq.id!]: { equipment_id: eq.id!, quantity_assigned: 1, location_on_truck: null } };
     });
   }
 
-  function handleQty(id: Equipment["id"], value: string) {
-    const num = Math.max(1, parseInt(value) || 1);
-    setSelected((prev) =>
-      prev[id] ? { ...prev, [id]: { ...prev[id], qty: num } } : prev,
-    );
+  function handleField(
+    id: Equipment["id"],
+    field: keyof Omit<SelectedEquipment, "equipment_id">,
+    value: string
+  ) {
+    setSelected((prev) => {
+      if (!prev[id]) return prev;
+      const updated = {
+        ...prev[id],
+        [field]: field === "quantity_assigned" ? Math.max(1, parseInt(value) || 1) : value,
+      };
+      return { ...prev, [id]: updated };
+    });
   }
 
   function handleSubmit() {
@@ -104,16 +110,11 @@ export default function AssignEquipmentModal({
     onClose();
   }
 
-  // ---- Shared sx -----------------------------------------------------------
+  // ---- Shared sx ---------------------------------------------------------
 
   const fieldSx = {
-    "& .MuiInputLabel-root": {
-      color: "rgba(255,255,255,0.5)",
-      fontWeight: 600,
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: theme.palette.secondary.main,
-    },
+    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
+    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -123,6 +124,20 @@ export default function AssignEquipmentModal({
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
     "& .MuiSelect-icon": { color: theme.palette.secondary.main },
+  };
+
+  const inlineFieldSx = {
+    "& .MuiOutlinedInput-root": {
+      color: "#e8e8e8",
+      bgcolor: "rgba(255,255,255,0.04)",
+      fontSize: "0.78rem",
+      "& fieldset": { borderColor: `${theme.palette.secondary.main}30` },
+      "&:hover fieldset": { borderColor: `${theme.palette.secondary.main}60` },
+      "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
+    },
+    "& input": { py: 0.6, px: 1 },
+    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.35)", fontSize: "0.78rem" },
+    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
   };
 
   const cellSx = {
@@ -149,17 +164,6 @@ export default function AssignEquipmentModal({
     "&.Mui-checked": { color: theme.palette.secondary.main },
   };
 
-  const qtyFieldSx = {
-    width: 64,
-    "& .MuiOutlinedInput-root": {
-      color: "#e8e8e8",
-      bgcolor: "rgba(255,255,255,0.06)",
-      "& fieldset": { borderColor: `${theme.palette.secondary.main}50` },
-    },
-    "& input": { textAlign: "center", py: 0.5, fontSize: "0.85rem" },
-  };
-
-  // ---- Render --------------------------------------------------------------
 
   return (
     <Dialog
@@ -234,9 +238,7 @@ export default function AssignEquipmentModal({
           select
           label="Apparatus"
           value={selectedApparatus}
-          onChange={(e) =>
-            setSelectedApparatus(Number(e.target.value) as Apparatus["id"])
-          }
+          onChange={(e) => setSelectedApparatus(Number(e.target.value) as Apparatus["id"])}
           fullWidth
           variant="outlined"
           sx={fieldSx}
@@ -252,13 +254,7 @@ export default function AssignEquipmentModal({
         </TextField>
 
         {/* Section label */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Typography
             variant="caption"
             sx={{
@@ -285,7 +281,7 @@ export default function AssignEquipmentModal({
           )}
         </Box>
 
-        {/* Equipment list — Table on desktop, Cards on mobile */}
+        {/* Equipment list */}
         {isMobile ? (
           // ---- Mobile: Card list ----
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -294,12 +290,7 @@ export default function AssignEquipmentModal({
               return (
                 <Box
                   key={eq.id}
-                  onClick={() => handleToggle(eq)}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    p: 1.5,
                     borderRadius: 1.5,
                     border: `1px solid ${
                       isChecked
@@ -309,49 +300,81 @@ export default function AssignEquipmentModal({
                     bgcolor: isChecked
                       ? `${theme.palette.secondary.main}10`
                       : "rgba(255,255,255,0.03)",
-                    cursor: "pointer",
+                    overflow: "hidden",
                     transition: "all 0.15s",
                   }}
                 >
-                  <Checkbox
-                    checked={isChecked}
-                    size="small"
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={() => handleToggle(eq)}
-                    sx={checkboxSx}
-                  />
-                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: isChecked ? "#fff" : "rgba(255,255,255,0.75)",
-                        fontWeight: isChecked ? 600 : 400,
-                        fontSize: "0.8rem",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {eq.name}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "rgba(255,255,255,0.35)" }}
-                    >
-                      {eq.inService ?? 0} in service
-                    </Typography>
-                  </Box>
-                  {isChecked && eq.id && (
-                    <TextField
-                      type="number"
-                      value={selected[eq.id].qty}
-                      onChange={(e) => handleQty(eq.id!, e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
-                      inputProps={{ min: 1, max: eq.inService ?? 1 }}
+                  {/* Row */}
+                  <Box
+                    onClick={() => handleToggle(eq)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      p: 1.5,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Checkbox
+                      checked={isChecked}
                       size="small"
-                      sx={qtyFieldSx}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => handleToggle(eq)}
+                      sx={checkboxSx}
                     />
-                  )}
+                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isChecked ? "#fff" : "rgba(255,255,255,0.75)",
+                          fontWeight: isChecked ? 600 : 400,
+                          fontSize: "0.8rem",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {eq.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
+                        {eq.inService ?? 0} in service
+                      </Typography>
+                    </Box>
+                    {isChecked && eq.id && (
+                      <TextField
+                        type="number"
+                        label="Qty"
+                        value={selected[eq.id].quantity_assigned}
+                        onChange={(e) => handleField(eq.id!, "quantity_assigned", e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        inputProps={{ min: 1, max: eq.inService ?? 1 }}
+                        size="small"
+                        sx={{ ...inlineFieldSx, width: 70 }}
+                      />
+                    )}
+                  </Box>
+
+                  {/* Compartment field — expands when checked */}
+                  <Collapse in={isChecked && Boolean(eq.id)}>
+                    <Box
+                      sx={{
+                        px: 1.5,
+                        pb: 1.5,
+                        borderTop: `1px solid ${theme.palette.secondary.main}20`,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <TextField
+                        label="Compartment"
+                        placeholder="e.g. Left Side, Rear, Officer Side"
+                        value={eq.id ? selected[eq.id]?.location_on_truck ?? "" : ""}
+                        onChange={(e) => handleField(eq.id!, "location_on_truck", e.target.value)}
+                        size="small"
+                        fullWidth
+                        sx={{ ...inlineFieldSx, mt: 1.25 }}
+                      />
+                    </Box>
+                  </Collapse>
                 </Box>
               );
             })}
@@ -362,7 +385,7 @@ export default function AssignEquipmentModal({
             sx={{
               borderRadius: 1.5,
               border: "1px solid rgba(255,255,255,0.08)",
-              maxHeight: 320,
+              maxHeight: 400,
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: 6 },
               "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
@@ -377,12 +400,9 @@ export default function AssignEquipmentModal({
                 <TableRow>
                   <TableCell padding="checkbox" sx={headerCellSx} />
                   <TableCell sx={headerCellSx}>Equipment</TableCell>
-                  <TableCell align="center" sx={headerCellSx}>
-                    In Service
-                  </TableCell>
-                  <TableCell align="center" sx={headerCellSx}>
-                    Qty
-                  </TableCell>
+                  <TableCell align="center" sx={headerCellSx}>In Service</TableCell>
+                  <TableCell align="center" sx={headerCellSx}>Qty</TableCell>
+                  <TableCell sx={headerCellSx}>Compartment</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -401,6 +421,7 @@ export default function AssignEquipmentModal({
                         transition: "background 0.15s",
                       }}
                     >
+                      {/* Checkbox */}
                       <TableCell padding="checkbox" sx={{ ...cellSx, pl: 1.5 }}>
                         <Checkbox
                           checked={isChecked}
@@ -410,13 +431,13 @@ export default function AssignEquipmentModal({
                           sx={checkboxSx}
                         />
                       </TableCell>
+
+                      {/* Name */}
                       <TableCell sx={cellSx}>
                         <Typography
                           variant="body2"
                           sx={{
-                            color: isChecked
-                              ? "#fff"
-                              : "rgba(255,255,255,0.75)",
+                            color: isChecked ? "#fff" : "rgba(255,255,255,0.75)",
                             fontWeight: isChecked ? 600 : 400,
                             fontSize: "0.825rem",
                           }}
@@ -424,6 +445,8 @@ export default function AssignEquipmentModal({
                           {eq.name}
                         </Typography>
                       </TableCell>
+
+                      {/* In Service */}
                       <TableCell align="center" sx={cellSx}>
                         <Chip
                           label={eq.inService ?? 0}
@@ -436,22 +459,47 @@ export default function AssignEquipmentModal({
                           }}
                         />
                       </TableCell>
-                      <TableCell align="center" sx={{ ...cellSx, width: 80 }}>
+
+                      {/* Qty */}
+                      <TableCell
+                        align="center"
+                        sx={{ ...cellSx, width: 80 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {isChecked && eq.id ? (
                           <TextField
                             type="number"
-                            value={selected[eq.id].qty}
-                            onChange={(e) => handleQty(eq.id!, e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
+                            value={selected[eq.id].quantity_assigned}
+                            onChange={(e) => handleField(eq.id!, "quantity_assigned", e.target.value)}
                             inputProps={{ min: 1, max: eq.inService ?? 1 }}
                             size="small"
-                            sx={qtyFieldSx}
+                            sx={{ ...inlineFieldSx, width: 64 }}
                           />
                         ) : (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "rgba(255,255,255,0.2)" }}
-                          >
+                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>
+                            —
+                          </Typography>
+                        )}
+                      </TableCell>
+
+                      {/* Compartment */}
+                      <TableCell
+                        sx={{ ...cellSx, minWidth: 160 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {isChecked && eq.id ? (
+                          <TextField
+                            placeholder="e.g. Left Side, Rear"
+                            value={selected[eq.id].location_on_truck ?? ""}
+                            onChange={(e) =>
+                              handleField(eq.id!, "location_on_truck", e.target.value)
+                            }
+                            size="small"
+                            fullWidth
+                            sx={inlineFieldSx}
+                          />
+                        ) : (
+                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>
                             —
                           </Typography>
                         )}
@@ -465,9 +513,7 @@ export default function AssignEquipmentModal({
         )}
       </DialogContent>
 
-      <Divider
-        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
-      />
+      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
 
       {/* Footer */}
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>

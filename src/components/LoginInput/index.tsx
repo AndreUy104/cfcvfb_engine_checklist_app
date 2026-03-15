@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState } from "react"
+import Image from "next/image"
 import {
   Box,
   Card,
@@ -10,49 +10,37 @@ import {
   Typography,
   IconButton,
   InputAdornment,
-} from "@mui/material";
-import { LoadingButton } from "@mui/lab";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useRouter } from "next/navigation";
+  Alert,
+} from "@mui/material"
+import { LoadingButton } from "@mui/lab"
+import Visibility from "@mui/icons-material/Visibility"
+import VisibilityOff from "@mui/icons-material/VisibilityOff"
+import { useAuth } from "@/hooks/useAuth"
 
 type LoginForm = {
-  email: string;
-  password: string;
-};
+  email: string
+  password: string
+}
 
 export default function Login() {
+  const { login, loading, error } = useAuth()
+
   const [form, setForm] = useState<LoginForm>({
     email: "",
     password: "",
-  });
-
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  })
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange =
     (field: keyof LoginForm) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({
-        ...prev,
-        [field]: event.target.value,
-      }));
-    };
+      setForm((prev) => ({ ...prev, [field]: event.target.value }))
+    }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    try {
-      setLoading(true);
-
-      console.log("Login:", form);
-
-      router.push("/Home");
-    } finally {
-      setLoading(false);
-    }
-  };
+    event.preventDefault()
+    await login(form)
+  }
 
   return (
     <Box
@@ -70,20 +58,13 @@ export default function Login() {
       <Card
         sx={{
           width: 400,
-          backdropFilter: "blur(0px)",
           backgroundColor: "rgba(255,255,255,0.85)",
           borderRadius: 3,
           boxShadow: 6,
         }}
       >
         <CardContent>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              mb: 2,
-            }}
-          >
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
             <Image
               src="/CircleLogo.png"
               alt="Logo"
@@ -93,14 +74,15 @@ export default function Login() {
             />
           </Box>
 
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            align="center"
-            gutterBottom
-          >
+          <Typography variant="h5" fontWeight="bold" align="center" gutterBottom>
             Engine Checklist
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {error}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
@@ -124,9 +106,7 @@ export default function Login() {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
+                    <IconButton onClick={() => setShowPassword((prev) => !prev)}>
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -147,5 +127,5 @@ export default function Login() {
         </CardContent>
       </Card>
     </Box>
-  );
+  )
 }

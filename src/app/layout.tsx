@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import ThemeRegistry from "@/theme/ThemeRegistry";
-import Sidebar from "@/components/Sidebar";
-import { Box } from "@mui/material";
+import ClientLayout from "@/theme/ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,21 +19,12 @@ export const metadata: Metadata = {
   description: "",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeRegistry>
-          <Box sx={{ display: "flex", minHeight: "100vh" }}>
-            <Sidebar />
-            {children}
-          </Box>
+          <ClientLayout>{children}</ClientLayout>
         </ThemeRegistry>
       </body>
     </html>

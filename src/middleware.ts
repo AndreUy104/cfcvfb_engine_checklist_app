@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   if (!user && request.nextUrl.pathname.startsWith("/Home")) {
-    return Response.redirect(new URL("/login", request.url))
+    return Response.redirect(new URL("/", request.url))
   }
 
   return response

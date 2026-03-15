@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Drawer,
   Box,
@@ -16,7 +16,6 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-
 import {
   Menu,
   Dashboard,
@@ -29,20 +28,22 @@ import {
   Build,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 const drawerWidth = 260;
 
 export default function Sidebar() {
   const router = useRouter();
+  const { logout, user, isFirstLogin } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [open, setOpen] = React.useState(false);
   const [active, setActive] = React.useState("dashboard");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
 
-  const toggleDrawer = () => {
-    setOpen(!open);
-  };
+  const toggleDrawer = () => setOpen(!open);
 
   const menuItems = [
     {
@@ -63,7 +64,7 @@ export default function Sidebar() {
       icon: <Inventory />,
       route: "/Inventory",
     },
-    { id: "reports", label: "Reports", icon: <Description /> },
+    { id: "reports",   label: "Reports",   icon: <Description /> },
     { id: "personnel", label: "Personnel", icon: <Group /> },
   ];
 
@@ -108,7 +109,6 @@ export default function Sidebar() {
             <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
               {item.icon}
             </ListItemIcon>
-
             <ListItemText
               primary={item.label}
               primaryTypographyProps={{
@@ -123,14 +123,13 @@ export default function Sidebar() {
 
       <Divider sx={{ borderColor: "rgba(255,0,0,0.15)" }} />
 
-      {/* Settings */}
+      {/* Settings & Logout */}
       <List sx={{ px: 1 }}>
         <ListItemButton
+          onClick={() => setIsPasswordModalOpen(true)}
           sx={{
             borderRadius: 1,
-            "&:hover": {
-              backgroundColor: "rgba(255,0,0,0.15)",
-            },
+            "&:hover": { backgroundColor: "rgba(255,0,0,0.15)" },
           }}
         >
           <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
@@ -138,17 +137,12 @@ export default function Sidebar() {
           </ListItemIcon>
           <ListItemText primary="Settings" />
         </ListItemButton>
-        {/* Logout */}
+
         <ListItemButton
+          onClick={logout}
           sx={{
             borderRadius: 1,
-            "&:hover": {
-              backgroundColor: "rgba(255,0,0,0.15)",
-            },
-          }}
-          onClick={() => {
-            console.log("Logout clicked");
-            router.push("/");
+            "&:hover": { backgroundColor: "rgba(255,0,0,0.15)" },
           }}
         >
           <ListItemIcon sx={{ color: "#ddd", minWidth: 36 }}>
@@ -169,7 +163,6 @@ export default function Sidebar() {
             <IconButton edge="start" color="inherit" onClick={toggleDrawer}>
               <Menu />
             </IconButton>
-
             <Typography variant="h6">Fire Station Check</Typography>
           </Toolbar>
         </AppBar>
@@ -191,6 +184,14 @@ export default function Sidebar() {
       >
         {sidebarContent}
       </Drawer>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen || isFirstLogin}
+        onClose={() => setIsPasswordModalOpen(false)}
+        email={user?.email ?? ""}
+        isFirstLogin={isFirstLogin}
+      />
     </>
   );
 }
