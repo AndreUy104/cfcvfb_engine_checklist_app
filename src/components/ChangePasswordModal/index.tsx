@@ -1,21 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Typography, IconButton,
-  Box, Divider, InputAdornment, Alert,
-} from "@mui/material"
-import CloseIcon from "@mui/icons-material/Close"
-import Visibility from "@mui/icons-material/Visibility"
-import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import LockResetIcon from "@mui/icons-material/LockReset"
-import { useTheme } from "@mui/material/styles"
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Typography,
+  IconButton,
+  Box,
+  Divider,
+  InputAdornment,
+  Alert,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import LockResetIcon from "@mui/icons-material/LockReset";
+import { useTheme } from "@mui/material/styles";
 import {
   ChangePasswordFormData,
   ChangePasswordModalProps,
-} from "@/utilities/types/users.types"
-import { useAuth } from "@/hooks/useAuth"
+} from "@/utilities/types/users.types";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ChangePasswordModal({
   isOpen,
@@ -23,70 +32,75 @@ export default function ChangePasswordModal({
   email,
   isFirstLogin = false,
 }: ChangePasswordModalProps) {
-  const theme = useTheme()
-  const { changePassword, loading, error } = useAuth()
+  const theme = useTheme();
+  const { changePassword, loading, error } = useAuth();
 
   const [form, setForm] = useState<ChangePasswordFormData>({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
-  })
+  });
 
   const [show, setShow] = useState({
     oldPassword: false,
     newPassword: false,
     confirmPassword: false,
-  })
+  });
 
-  const [errors, setErrors] = useState<Partial<ChangePasswordFormData>>({})
+  const [errors, setErrors] = useState<Partial<ChangePasswordFormData>>({});
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: "" }))
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
   }
 
   function toggleShow(field: keyof typeof show) {
-    setShow((prev) => ({ ...prev, [field]: !prev[field] }))
+    setShow((prev) => ({ ...prev, [field]: !prev[field] }));
   }
 
   function validate(): boolean {
-    const newErrors: Partial<ChangePasswordFormData> = {}
+    const newErrors: Partial<ChangePasswordFormData> = {};
 
     if (!isFirstLogin && !form.oldPassword) {
-      newErrors.oldPassword = "Current password is required."
+      newErrors.oldPassword = "Current password is required.";
     }
     if (!form.newPassword) {
-      newErrors.newPassword = "New password is required."
+      newErrors.newPassword = "New password is required.";
     } else if (form.newPassword.length < 8) {
-      newErrors.newPassword = "Password must be at least 8 characters."
+      newErrors.newPassword = "Password must be at least 8 characters.";
     }
     if (!form.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your new password."
+      newErrors.confirmPassword = "Please confirm your new password.";
     } else if (form.newPassword !== form.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match."
+      newErrors.confirmPassword = "Passwords do not match.";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   }
 
   async function handleSubmit() {
-    if (!validate()) return
-    await changePassword(form.newPassword)
-    if (!error) handleClose()
+    if (!validate()) return;
+    await changePassword(form.newPassword);
+    if (!error) handleClose();
   }
 
   function handleClose() {
-    setForm({ oldPassword: "", newPassword: "", confirmPassword: "" })
-    setErrors({})
-    setShow({ oldPassword: false, newPassword: false, confirmPassword: false })
-    onClose()
+    setForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    setErrors({});
+    setShow({ oldPassword: false, newPassword: false, confirmPassword: false });
+    onClose();
   }
 
   const fieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 600,
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -96,7 +110,7 @@ export default function ChangePasswordModal({
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
     "& .MuiFormHelperText-root": { color: "#ef4444", mx: 0 },
-  }
+  };
 
   const eyeBtn = (field: keyof typeof show) => (
     <InputAdornment position="end">
@@ -104,12 +118,19 @@ export default function ChangePasswordModal({
         size="small"
         onClick={() => toggleShow(field)}
         edge="end"
-        sx={{ color: "rgba(255,255,255,0.3)", "&:hover": { color: "rgba(255,255,255,0.7)" } }}
+        sx={{
+          color: "rgba(255,255,255,0.3)",
+          "&:hover": { color: "rgba(255,255,255,0.7)" },
+        }}
       >
-        {show[field] ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+        {show[field] ? (
+          <VisibilityOff fontSize="small" />
+        ) : (
+          <Visibility fontSize="small" />
+        )}
       </IconButton>
     </InputAdornment>
-  )
+  );
 
   return (
     <Dialog
@@ -160,7 +181,10 @@ export default function ChangePasswordModal({
           <IconButton
             size="small"
             onClick={handleClose}
-            sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              "&:hover": { color: "#fff" },
+            }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
@@ -169,7 +193,13 @@ export default function ChangePasswordModal({
 
       {/* Body */}
       <DialogContent
-        sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+        }}
       >
         {/* API error */}
         {error && (
@@ -188,10 +218,16 @@ export default function ChangePasswordModal({
             border: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", display: "block", mb: 0.25 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: "rgba(255,255,255,0.4)", display: "block", mb: 0.25 }}
+          >
             Account
           </Typography>
-          <Typography variant="body2" sx={{ color: "#e8e8e8", fontWeight: 600 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "#e8e8e8", fontWeight: 600 }}
+          >
             {email}
           </Typography>
         </Box>
@@ -275,5 +311,5 @@ export default function ChangePasswordModal({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

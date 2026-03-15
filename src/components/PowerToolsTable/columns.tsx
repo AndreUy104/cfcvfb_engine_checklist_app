@@ -1,18 +1,42 @@
-"use client"
+"use client";
 
-import { Box, Chip, IconButton, Tooltip, Typography } from "@mui/material"
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
-import { Equipment, PowerToolColumn } from "@/utilities/types/equipment.types"
+import { Box, Chip, IconButton, Tooltip, Typography } from "@mui/material";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import { Equipment, PowerToolColumn } from "@/utilities/types/equipment.types";
 
-function StatusChip({ down, total }: { down: number | null; total: number | null }) {
-  const isDown = (down ?? 0) > 0
-  const allDown = (down ?? 0) === (total ?? 0)
+function StatusChip({
+  down,
+  total,
+}: {
+  down: number | null;
+  total: number | null;
+}) {
+  const isDown = (down ?? 0) > 0;
+  const allDown = (down ?? 0) === (total ?? 0);
 
   const cfg = allDown
-    ? { dotColor: "#ef4444", bgColor: "rgba(239,68,68,0.10)", textColor: "#ef4444", borderColor: "rgba(239,68,68,0.30)", label: "Down" }
+    ? {
+        dotColor: "#ef4444",
+        bgColor: "rgba(239,68,68,0.10)",
+        textColor: "#ef4444",
+        borderColor: "rgba(239,68,68,0.30)",
+        label: "Down",
+      }
     : isDown
-      ? { dotColor: "#f59e0b", bgColor: "rgba(245,158,11,0.10)", textColor: "#f59e0b", borderColor: "rgba(245,158,11,0.30)", label: "Partial" }
-      : { dotColor: "#22c55e", bgColor: "rgba(34,197,94,0.10)", textColor: "#22c55e", borderColor: "rgba(34,197,94,0.30)", label: "OK" }
+      ? {
+          dotColor: "#f59e0b",
+          bgColor: "rgba(245,158,11,0.10)",
+          textColor: "#f59e0b",
+          borderColor: "rgba(245,158,11,0.30)",
+          label: "Partial",
+        }
+      : {
+          dotColor: "#22c55e",
+          bgColor: "rgba(34,197,94,0.10)",
+          textColor: "#22c55e",
+          borderColor: "rgba(34,197,94,0.30)",
+          label: "OK",
+        };
 
   return (
     <Chip
@@ -42,13 +66,13 @@ function StatusChip({ down, total }: { down: number | null; total: number | null
         "& .MuiChip-label": { pl: 0.5, pr: 1.5 },
       }}
     />
-  )
+  );
 }
 
 export function getPowerToolColumns(options?: {
-  onCheck?: (row: Equipment) => void
+  onCheck?: (row: Equipment) => void;
 }): PowerToolColumn[] {
-  const { onCheck } = options ?? {}
+  const { onCheck } = options ?? {};
 
   return [
     {
@@ -56,10 +80,18 @@ export function getPowerToolColumns(options?: {
       label: "Tool",
       renderCell: (row) => (
         <>
-          <Typography fontWeight={700} fontSize="0.88rem" letterSpacing="0.02em" sx={{ color: "text.primary" }}>
+          <Typography
+            fontWeight={700}
+            fontSize="0.88rem"
+            letterSpacing="0.02em"
+            sx={{ color: "text.primary" }}
+          >
             {row.name ?? "—"}
           </Typography>
-          <Typography fontSize="0.75rem" sx={{ color: "text.disabled", mt: 0.25 }}>
+          <Typography
+            fontSize="0.75rem"
+            sx={{ color: "text.disabled", mt: 0.25 }}
+          >
             #{row.id}
           </Typography>
         </>
@@ -106,5 +138,5 @@ export function getPowerToolColumns(options?: {
         </Tooltip>
       ),
     },
-  ]
+  ];
 }

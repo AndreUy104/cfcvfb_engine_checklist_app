@@ -1,30 +1,47 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, MenuItem, Button, Typography, IconButton,
-  Box, Divider, Checkbox, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Chip, Collapse,
-  useMediaQuery, Alert,
-} from "@mui/material"
-import CloseIcon from "@mui/icons-material/Close"
-import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined"
-import { useTheme } from "@mui/material/styles"
-import { EngineWithType } from "@/utilities/types/engine.types"
-import { Equipment } from "@/utilities/types/equipment.types"
-import { useEngineEquipment } from "@/hooks/useEngineEquipment"
-import { useAuth } from "@/hooks/useAuth"
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  MenuItem,
+  Button,
+  Typography,
+  IconButton,
+  Box,
+  Divider,
+  Checkbox,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  Collapse,
+  useMediaQuery,
+  Alert,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import { useTheme } from "@mui/material/styles";
+import { EngineWithType } from "@/utilities/types/engine.types";
+import { Equipment } from "@/utilities/types/equipment.types";
+import { useEngineEquipment } from "@/hooks/useEngineEquipment";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SelectedEquipment {
-  equipment_id: number
-  quantity_assigned: number
-  location_on_truck: string | null
+  equipment_id: number;
+  quantity_assigned: number;
+  location_on_truck: string | null;
 }
 
 interface AssignEquipmentToApparatusModalProps {
-  isOpen: boolean
-  onClose: () => void
-  engines?: EngineWithType[]
-  equipments?: Equipment[]
+  isOpen: boolean;
+  onClose: () => void;
+  engines?: EngineWithType[];
+  equipments?: Equipment[];
 }
 
 export default function AssignEquipmentToApparatusModal({
@@ -33,49 +50,58 @@ export default function AssignEquipmentToApparatusModal({
   engines = [],
   equipments = [],
 }: AssignEquipmentToApparatusModalProps) {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
-  const { assignEquipment, loading, error } = useEngineEquipment()
-  const { user } = useAuth()
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { assignEquipment, loading, error } = useEngineEquipment();
+  const { user } = useAuth();
 
-  const [selectedEngineId, setSelectedEngineId] = useState<number | "">("")
-  const [selected, setSelected] = useState<Record<number, SelectedEquipment>>({})
+  const [selectedEngineId, setSelectedEngineId] = useState<number | "">("");
+  const [selected, setSelected] = useState<Record<number, SelectedEquipment>>(
+    {},
+  );
 
-  const selectedCount = Object.keys(selected).length
+  const selectedCount = Object.keys(selected).length;
 
   function handleToggle(eq: Equipment) {
     setSelected((prev) => {
       if (prev[eq.id]) {
-        const next = { ...prev }
-        delete next[eq.id]
-        return next
+        const next = { ...prev };
+        delete next[eq.id];
+        return next;
       }
       return {
         ...prev,
-        [eq.id]: { equipment_id: eq.id, quantity_assigned: 1, location_on_truck: null },
-      }
-    })
+        [eq.id]: {
+          equipment_id: eq.id,
+          quantity_assigned: 1,
+          location_on_truck: null,
+        },
+      };
+    });
   }
 
   function handleField(
     id: number,
     field: keyof Omit<SelectedEquipment, "equipment_id">,
-    value: string
+    value: string,
   ) {
     setSelected((prev) => {
-      if (!prev[id]) return prev
+      if (!prev[id]) return prev;
       return {
         ...prev,
         [id]: {
           ...prev[id],
-          [field]: field === "quantity_assigned" ? Math.max(1, parseInt(value) || 1) : value,
+          [field]:
+            field === "quantity_assigned"
+              ? Math.max(1, parseInt(value) || 1)
+              : value,
         },
-      }
-    })
+      };
+    });
   }
 
   async function handleSubmit() {
-    if (!selectedEngineId) return
+    if (!selectedEngineId) return;
 
     // Insert each selected equipment as a separate assignment row
     await Promise.all(
@@ -86,22 +112,27 @@ export default function AssignEquipmentToApparatusModal({
           quantity_assigned: s.quantity_assigned,
           location_on_truck: s.location_on_truck,
           assigned_by: user?.id ? Number(user.id) : null,
-        })
-      )
-    )
+        }),
+      ),
+    );
 
-    if (!error) handleClose()
+    if (!error) handleClose();
   }
 
   function handleClose() {
-    setSelectedEngineId("")
-    setSelected({})
-    onClose()
+    setSelectedEngineId("");
+    setSelected({});
+    onClose();
   }
 
   const fieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 600,
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -111,7 +142,7 @@ export default function AssignEquipmentToApparatusModal({
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
     "& .MuiSelect-icon": { color: theme.palette.secondary.main },
-  }
+  };
 
   const inlineFieldSx = {
     "& .MuiOutlinedInput-root": {
@@ -123,9 +154,14 @@ export default function AssignEquipmentToApparatusModal({
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
     "& input": { py: 0.6, px: 1 },
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.35)", fontSize: "0.78rem" },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
-  }
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.35)",
+      fontSize: "0.78rem",
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
+  };
 
   const cellSx = {
     color: "rgba(255,255,255,0.75)",
@@ -133,7 +169,7 @@ export default function AssignEquipmentToApparatusModal({
     py: 1,
     px: { xs: 1, sm: 2 },
     fontSize: { xs: "0.75rem", sm: "0.875rem" },
-  }
+  };
 
   const headerCellSx = {
     ...cellSx,
@@ -144,12 +180,12 @@ export default function AssignEquipmentToApparatusModal({
     textTransform: "uppercase" as const,
     borderBottom: `1px solid ${theme.palette.secondary.main}25`,
     bgcolor: "rgba(0,0,0,0.4) !important",
-  }
+  };
 
   const checkboxSx = {
     color: "rgba(255,255,255,0.25)",
     "&.Mui-checked": { color: theme.palette.secondary.main },
-  }
+  };
 
   return (
     <Dialog
@@ -174,7 +210,8 @@ export default function AssignEquipmentToApparatusModal({
         sx={{
           bgcolor: `${theme.palette.primary.main}cc`,
           borderBottom: `1px solid ${theme.palette.secondary.main}25`,
-          px: 3, py: 1.5,
+          px: 3,
+          py: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -182,21 +219,41 @@ export default function AssignEquipmentToApparatusModal({
         }}
       >
         <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#f0f0f0" }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "#f0f0f0",
+            }}
+          >
             Assign Equipment
           </Typography>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
             Assign equipment to an apparatus
           </Typography>
         </Box>
-        <IconButton size="small" onClick={handleClose} sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}>
+        <IconButton
+          size="small"
+          onClick={handleClose}
+          sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
       {/* Body */}
       <DialogContent
-        sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5, overflowY: "auto", flexGrow: 1 }}
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+          overflowY: "auto",
+          flexGrow: 1,
+        }}
       >
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -221,8 +278,22 @@ export default function AssignEquipmentToApparatusModal({
         </TextField>
 
         {/* Section label */}
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              color: "rgba(255,255,255,0.4)",
+              fontWeight: 700,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+            }}
+          >
             Available Equipment
           </Typography>
           {selectedCount > 0 && (
@@ -244,25 +315,55 @@ export default function AssignEquipmentToApparatusModal({
         {isMobile ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {equipments.map((eq) => {
-              const isChecked = Boolean(selected[eq.id])
+              const isChecked = Boolean(selected[eq.id]);
               return (
                 <Box
                   key={eq.id}
                   sx={{
                     borderRadius: 1.5,
                     border: `1px solid ${isChecked ? `${theme.palette.secondary.main}50` : "rgba(255,255,255,0.08)"}`,
-                    bgcolor: isChecked ? `${theme.palette.secondary.main}10` : "rgba(255,255,255,0.03)",
+                    bgcolor: isChecked
+                      ? `${theme.palette.secondary.main}10`
+                      : "rgba(255,255,255,0.03)",
                     overflow: "hidden",
                     transition: "all 0.15s",
                   }}
                 >
-                  <Box onClick={() => handleToggle(eq)} sx={{ display: "flex", alignItems: "center", gap: 1.5, p: 1.5, cursor: "pointer" }}>
-                    <Checkbox checked={isChecked} size="small" onClick={(e) => e.stopPropagation()} onChange={() => handleToggle(eq)} sx={checkboxSx} />
+                  <Box
+                    onClick={() => handleToggle(eq)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      p: 1.5,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      size="small"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => handleToggle(eq)}
+                      sx={checkboxSx}
+                    />
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                      <Typography variant="body2" sx={{ color: isChecked ? "#fff" : "rgba(255,255,255,0.75)", fontWeight: isChecked ? 600 : 400, fontSize: "0.8rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: isChecked ? "#fff" : "rgba(255,255,255,0.75)",
+                          fontWeight: isChecked ? 600 : 400,
+                          fontSize: "0.8rem",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
                         {eq.name}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.35)" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "rgba(255,255,255,0.35)" }}
+                      >
                         {eq.total_in_service ?? 0} in service
                       </Typography>
                     </Box>
@@ -271,7 +372,13 @@ export default function AssignEquipmentToApparatusModal({
                         type="number"
                         label="Qty"
                         value={selected[eq.id].quantity_assigned}
-                        onChange={(e) => handleField(eq.id, "quantity_assigned", e.target.value)}
+                        onChange={(e) =>
+                          handleField(
+                            eq.id,
+                            "quantity_assigned",
+                            e.target.value,
+                          )
+                        }
                         onClick={(e) => e.stopPropagation()}
                         inputProps={{ min: 1, max: eq.total_in_service ?? 1 }}
                         size="small"
@@ -280,12 +387,25 @@ export default function AssignEquipmentToApparatusModal({
                     )}
                   </Box>
                   <Collapse in={isChecked}>
-                    <Box sx={{ px: 1.5, pb: 1.5, borderTop: `1px solid ${theme.palette.secondary.main}20` }} onClick={(e) => e.stopPropagation()}>
+                    <Box
+                      sx={{
+                        px: 1.5,
+                        pb: 1.5,
+                        borderTop: `1px solid ${theme.palette.secondary.main}20`,
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <TextField
                         label="Compartment"
                         placeholder="e.g. Left Side, Rear, Officer Side"
                         value={selected[eq.id]?.location_on_truck ?? ""}
-                        onChange={(e) => handleField(eq.id, "location_on_truck", e.target.value)}
+                        onChange={(e) =>
+                          handleField(
+                            eq.id,
+                            "location_on_truck",
+                            e.target.value,
+                          )
+                        }
                         size="small"
                         fullWidth
                         sx={{ ...inlineFieldSx, mt: 1.25 }}
@@ -293,7 +413,7 @@ export default function AssignEquipmentToApparatusModal({
                     </Box>
                   </Collapse>
                 </Box>
-              )
+              );
             })}
           </Box>
         ) : (
@@ -305,7 +425,10 @@ export default function AssignEquipmentToApparatusModal({
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: 6 },
               "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
-              "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(255,255,255,0.1)", borderRadius: 3 },
+              "&::-webkit-scrollbar-thumb": {
+                bgcolor: "rgba(255,255,255,0.1)",
+                borderRadius: 3,
+              },
             }}
           >
             <Table size="small" stickyHeader>
@@ -313,66 +436,128 @@ export default function AssignEquipmentToApparatusModal({
                 <TableRow>
                   <TableCell padding="checkbox" sx={headerCellSx} />
                   <TableCell sx={headerCellSx}>Equipment</TableCell>
-                  <TableCell align="center" sx={headerCellSx}>In Service</TableCell>
-                  <TableCell align="center" sx={headerCellSx}>Qty</TableCell>
+                  <TableCell align="center" sx={headerCellSx}>
+                    In Service
+                  </TableCell>
+                  <TableCell align="center" sx={headerCellSx}>
+                    Qty
+                  </TableCell>
                   <TableCell sx={headerCellSx}>Compartment</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {equipments.map((eq) => {
-                  const isChecked = Boolean(selected[eq.id])
+                  const isChecked = Boolean(selected[eq.id]);
                   return (
                     <TableRow
                       key={eq.id}
                       onClick={() => handleToggle(eq)}
                       sx={{
                         cursor: "pointer",
-                        bgcolor: isChecked ? `${theme.palette.secondary.main}10` : "transparent",
+                        bgcolor: isChecked
+                          ? `${theme.palette.secondary.main}10`
+                          : "transparent",
                         "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
                         transition: "background 0.15s",
                       }}
                     >
                       <TableCell padding="checkbox" sx={{ ...cellSx, pl: 1.5 }}>
-                        <Checkbox checked={isChecked} size="small" onClick={(e) => e.stopPropagation()} onChange={() => handleToggle(eq)} sx={checkboxSx} />
+                        <Checkbox
+                          checked={isChecked}
+                          size="small"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={() => handleToggle(eq)}
+                          sx={checkboxSx}
+                        />
                       </TableCell>
                       <TableCell sx={cellSx}>
-                        <Typography variant="body2" sx={{ color: isChecked ? "#fff" : "rgba(255,255,255,0.75)", fontWeight: isChecked ? 600 : 400, fontSize: "0.825rem" }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: isChecked
+                              ? "#fff"
+                              : "rgba(255,255,255,0.75)",
+                            fontWeight: isChecked ? 600 : 400,
+                            fontSize: "0.825rem",
+                          }}
+                        >
                           {eq.name}
                         </Typography>
                       </TableCell>
                       <TableCell align="center" sx={cellSx}>
-                        <Chip label={eq.total_in_service ?? 0} size="small" sx={{ bgcolor: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", height: 20 }} />
+                        <Chip
+                          label={eq.total_in_service ?? 0}
+                          size="small"
+                          sx={{
+                            bgcolor: "rgba(255,255,255,0.06)",
+                            color: "rgba(255,255,255,0.6)",
+                            fontSize: "0.7rem",
+                            height: 20,
+                          }}
+                        />
                       </TableCell>
-                      <TableCell align="center" sx={{ ...cellSx, width: 80 }} onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        align="center"
+                        sx={{ ...cellSx, width: 80 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {isChecked ? (
                           <TextField
                             type="number"
                             value={selected[eq.id].quantity_assigned}
-                            onChange={(e) => handleField(eq.id, "quantity_assigned", e.target.value)}
-                            inputProps={{ min: 1, max: eq.total_in_service ?? 1 }}
+                            onChange={(e) =>
+                              handleField(
+                                eq.id,
+                                "quantity_assigned",
+                                e.target.value,
+                              )
+                            }
+                            inputProps={{
+                              min: 1,
+                              max: eq.total_in_service ?? 1,
+                            }}
                             size="small"
                             sx={{ ...inlineFieldSx, width: 64 }}
                           />
                         ) : (
-                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>—</Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.2)" }}
+                          >
+                            —
+                          </Typography>
                         )}
                       </TableCell>
-                      <TableCell sx={{ ...cellSx, minWidth: 160 }} onClick={(e) => e.stopPropagation()}>
+                      <TableCell
+                        sx={{ ...cellSx, minWidth: 160 }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {isChecked ? (
                           <TextField
                             placeholder="e.g. Left Side, Rear"
                             value={selected[eq.id].location_on_truck ?? ""}
-                            onChange={(e) => handleField(eq.id, "location_on_truck", e.target.value)}
+                            onChange={(e) =>
+                              handleField(
+                                eq.id,
+                                "location_on_truck",
+                                e.target.value,
+                              )
+                            }
                             size="small"
                             fullWidth
                             sx={inlineFieldSx}
                           />
                         ) : (
-                          <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.2)" }}>—</Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "rgba(255,255,255,0.2)" }}
+                          >
+                            —
+                          </Typography>
                         )}
                       </TableCell>
                     </TableRow>
-                  )
+                  );
                 })}
               </TableBody>
             </Table>
@@ -380,10 +565,23 @@ export default function AssignEquipmentToApparatusModal({
         )}
       </DialogContent>
 
-      <Divider sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }} />
+      <Divider
+        sx={{ borderColor: `${theme.palette.secondary.main}20`, flexShrink: 0 }}
+      />
 
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1, flexShrink: 0 }}>
-        <Button onClick={handleClose} variant="outlined" sx={{ color: "rgba(255,255,255,0.5)", borderColor: "rgba(255,255,255,0.15)", "&:hover": { borderColor: "rgba(255,255,255,0.35)", color: "rgba(255,255,255,0.85)" } }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            color: "rgba(255,255,255,0.5)",
+            borderColor: "rgba(255,255,255,0.15)",
+            "&:hover": {
+              borderColor: "rgba(255,255,255,0.35)",
+              color: "rgba(255,255,255,0.85)",
+            },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -392,11 +590,15 @@ export default function AssignEquipmentToApparatusModal({
           color="secondary"
           disabled={!selectedEngineId || selectedCount === 0 || loading}
           startIcon={<AssignmentTurnedInOutlinedIcon />}
-          sx={{ fontWeight: 700, letterSpacing: "0.06em", "&.Mui-disabled": { opacity: 0.4 } }}
+          sx={{
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            "&.Mui-disabled": { opacity: 0.4 },
+          }}
         >
           {selectedCount > 0 ? `Assign (${selectedCount})` : "Assign"}
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

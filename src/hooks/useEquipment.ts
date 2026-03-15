@@ -1,139 +1,138 @@
-import { useCallback, useMemo, useState } from "react"
-import { createClient } from "@/library/supabase/client"
-import type { Equipment, EquipmentInsert, EquipmentUpdate } from "@/utilities/types/equipment.types"
+import { useCallback, useMemo, useState } from "react";
+import { createClient } from "@/library/supabase/client";
+import type {
+  Equipment,
+  EquipmentInsert,
+  EquipmentUpdate,
+} from "@/utilities/types/equipment.types";
 
 interface UseEquipmentReturn {
-  equipments: Equipment[]
-  powerTools: Equipment[] 
-  equipment: Equipment | null
-  loading: boolean
-  error: string | null
-  fetchEquipments: () => Promise<void>
-  fetchEquipment: (id: number) => Promise<void>
-  fetchPowerTools: () => Promise<void>
-  createEquipment: (data: EquipmentInsert) => Promise<void>
-  updateEquipment: (id: number, data: EquipmentUpdate) => Promise<void>
-  deleteEquipment: (id: number) => Promise<void>
+  equipments: Equipment[];
+  powerTools: Equipment[];
+  equipment: Equipment | null;
+  loading: boolean;
+  error: string | null;
+  fetchEquipments: () => Promise<void>;
+  fetchEquipment: (id: number) => Promise<void>;
+  fetchPowerTools: () => Promise<void>;
+  createEquipment: (data: EquipmentInsert) => Promise<void>;
+  updateEquipment: (id: number, data: EquipmentUpdate) => Promise<void>;
+  deleteEquipment: (id: number) => Promise<void>;
 }
 
 export function useEquipment(): UseEquipmentReturn {
-  const supabase = useMemo(() => createClient(), [])
+  const supabase = useMemo(() => createClient(), []);
 
-  const [equipments, setEquipments] = useState<Equipment[]>([])
-  const [powerTools, setPowerTools] = useState<Equipment[]>([])
-  const [equipment, setEquipment] = useState<Equipment | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [equipments, setEquipments] = useState<Equipment[]>([]);
+  const [powerTools, setPowerTools] = useState<Equipment[]>([]);
+  const [equipment, setEquipment] = useState<Equipment | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchEquipments = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     const { data, error } = await supabase
       .from("Equipments")
       .select("*")
       .eq("is_power_tool", false)
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setEquipments(data)
+      setEquipments(data);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const fetchEquipment = async (id: number) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     const { data, error } = await supabase
       .from("Equipments")
       .select("*")
       .eq("id", id)
-      .single()
+      .single();
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setEquipment(data)
+      setEquipment(data);
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const fetchPowerTools = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     const { data, error } = await supabase
       .from("Equipments")
       .select("*")
       .eq("is_power_tool", true)
-      .order("created_at", { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setPowerTools(data)
+      setPowerTools(data);
     }
 
-    setLoading(false)
-  }, [supabase])
+    setLoading(false);
+  }, [supabase]);
 
   const createEquipment = async (data: EquipmentInsert) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
-    const { error } = await supabase
-      .from("Equipments")
-      .insert(data)
+    const { error } = await supabase.from("Equipments").insert(data);
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      await fetchEquipments()
+      await fetchEquipments();
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const updateEquipment = async (id: number, data: EquipmentUpdate) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     const { error } = await supabase
       .from("Equipments")
       .update(data)
-      .eq("id", id)
+      .eq("id", id);
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      await fetchEquipments()
+      await fetchEquipments();
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   const deleteEquipment = async (id: number) => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
-    const { error } = await supabase
-      .from("Equipments")
-      .delete()
-      .eq("id", id)
+    const { error } = await supabase.from("Equipments").delete().eq("id", id);
 
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setEquipments((prev) => prev.filter((e) => e.id !== id))
+      setEquipments((prev) => prev.filter((e) => e.id !== id));
     }
 
-    setLoading(false)
-  }
+    setLoading(false);
+  };
 
   return {
     equipments,
@@ -147,5 +146,5 @@ export function useEquipment(): UseEquipmentReturn {
     createEquipment,
     updateEquipment,
     deleteEquipment,
-  }
+  };
 }

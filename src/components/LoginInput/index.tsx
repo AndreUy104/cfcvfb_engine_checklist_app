@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import Image from "next/image"
+import React, { useState } from "react";
+import Image from "next/image";
 import {
   Box,
   Card,
@@ -11,36 +11,36 @@ import {
   IconButton,
   InputAdornment,
   Alert,
-} from "@mui/material"
-import { LoadingButton } from "@mui/lab"
-import Visibility from "@mui/icons-material/Visibility"
-import VisibilityOff from "@mui/icons-material/VisibilityOff"
-import { useAuth } from "@/hooks/useAuth"
+} from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useAuth } from "@/hooks/useAuth";
 
 type LoginForm = {
-  email: string
-  password: string
-}
+  email: string;
+  password: string;
+};
 
 export default function Login() {
-  const { login, loading, error } = useAuth()
+  const { login, loading, error } = useAuth();
 
   const [form, setForm] = useState<LoginForm>({
     email: "",
     password: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange =
     (field: keyof LoginForm) =>
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      setForm((prev) => ({ ...prev, [field]: event.target.value }))
-    }
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+    };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault()
-    await login(form)
-  }
+    event.preventDefault();
+    await login(form);
+  };
 
   return (
     <Box
@@ -74,7 +74,12 @@ export default function Login() {
             />
           </Box>
 
-          <Typography variant="h5" fontWeight="bold" align="center" gutterBottom>
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            align="center"
+            gutterBottom
+          >
             Engine Checklist
           </Typography>
 
@@ -106,7 +111,9 @@ export default function Login() {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword((prev) => !prev)}>
+                    <IconButton
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
                   </InputAdornment>
@@ -127,5 +134,5 @@ export default function Login() {
         </CardContent>
       </Card>
     </Box>
-  )
+  );
 }

@@ -29,44 +29,72 @@ import {
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 const drawerWidth = 260;
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  route?: string;
+  allowedPositions?: number[]; // undefined = accessible by all
+}
+
+const ALL_MENU_ITEMS: MenuItem[] = [
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: <Dashboard />,
+    route: "/Home",
+  },
+  {
+    id: "powerTools",
+    label: "Power Tools Inventory",
+    icon: <Build />,
+    route: "/PowerTools",
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: <Inventory />,
+    route: "/Inventory",
+  },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: <Description />,
+    route: "/Reports",
+    allowedPositions: [2, 3], // position_id 2 and 3 only
+  },
+  {
+    id: "personnel",
+    label: "Personnel",
+    icon: <Group />,
+    allowedPositions: [3], // position_id 3 only
+  },
+];
+
 export default function Sidebar() {
   const router = useRouter();
   const { logout, user, isFirstLogin } = useAuth();
+  const { profile } = useUserProfile();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [open, setOpen] = React.useState(false);
-  const [active, setActive] = React.useState("dashboard");
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("dashboard");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const toggleDrawer = () => setOpen(!open);
 
-  const menuItems = [
-    {
-      id: "dashboard",
-      label: "Dashboard",
-      icon: <Dashboard />,
-      route: "/Home",
-    },
-    {
-      id: "powerTools",
-      label: "Power Tools Inventory",
-      icon: <Build />,
-      route: "PowerTools",
-    },
-    {
-      id: "inventory",
-      label: "Inventory",
-      icon: <Inventory />,
-      route: "/Inventory",
-    },
-    { id: "reports",   label: "Reports",   icon: <Description /> },
-    { id: "personnel", label: "Personnel", icon: <Group /> },
-  ];
+  // Filter menu items based on position_id
+  const visibleMenuItems = ALL_MENU_ITEMS.filter((item) => {
+    if (!item.allowedPositions) return true; // no restriction
+    if (!profile?.position_id) return false; // profile not loaded yet or no position
+    return item.allowedPositions.includes(profile.position_id);
+  });
 
   const sidebarContent = (
     <Box
@@ -88,7 +116,7 @@ export default function Sidebar() {
 
       {/* Menu */}
       <List sx={{ px: 1 }}>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <ListItemButton
             key={item.id}
             onClick={() => {
@@ -156,7 +184,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Top Bar */}
       {isMobile && (
         <AppBar position="fixed" color="primary">
           <Toolbar>
@@ -168,7 +195,6 @@ export default function Sidebar() {
         </AppBar>
       )}
 
-      {/* Sidebar */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? open : true}
@@ -185,7 +211,6 @@ export default function Sidebar() {
         {sidebarContent}
       </Drawer>
 
-      {/* Change Password Modal */}
       <ChangePasswordModal
         isOpen={isPasswordModalOpen || isFirstLogin}
         onClose={() => setIsPasswordModalOpen(false)}

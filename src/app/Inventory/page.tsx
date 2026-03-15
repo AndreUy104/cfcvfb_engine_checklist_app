@@ -1,25 +1,30 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import EquipmentTable from "@/components/EquipmentTable"
-import { getEquipmentColumns } from "@/components/EquipmentTable/columns"
-import { messageEnum } from "@/utilities/constants/message.constant"
-import { Box, Button, Typography, Alert, CircularProgress } from "@mui/material"
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined"
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline"
-import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined"
-import AddNewApparatusModal from "@/components/AddNewApparatusModal"
-import AddNewEquipmentModal from "@/components/AddNewEquipmentModal"
-import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal"
-import { useEquipment } from "@/hooks/useEquipment"
-import { useEngine } from "@/hooks/useEngine"
-import { Equipment } from "@/utilities/types/equipment.types"
-import { useState } from "react"
+import { useEffect } from "react";
+import EquipmentTable from "@/components/EquipmentTable";
+import { getEquipmentColumns } from "@/components/EquipmentTable/columns";
+import { messageEnum } from "@/utilities/constants/message.constant";
+import {
+  Box,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
+import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
+import AddNewApparatusModal from "@/components/AddNewApparatusModal";
+import AddNewEquipmentModal from "@/components/AddNewEquipmentModal";
+import AssignEquipmentModal from "@/components/AssignEquipmentToApparatusModal";
+import { useEquipment } from "@/hooks/useEquipment";
+import { useEngine } from "@/hooks/useEngine";
+import { useState } from "react";
 
-type ModalType = "apparatus" | "equipment" | "assign"
+type ModalType = "apparatus" | "equipment" | "assign";
 
 interface ModalState {
-  type: ModalType | null
+  type: ModalType | null;
 }
 
 export default function InventoryPage() {
@@ -28,41 +33,28 @@ export default function InventoryPage() {
     loading: equipmentLoading,
     error: equipmentError,
     fetchEquipments,
-    deleteEquipment,
-  } = useEquipment()
+  } = useEquipment();
 
   const {
     engines,
     loading: engineLoading,
     error: engineError,
     fetchEngines,
-  } = useEngine()
+  } = useEngine();
 
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(5)
-  const [isOpen, setIsOpen] = useState<ModalState>({ type: null })
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isOpen, setIsOpen] = useState<ModalState>({ type: null });
 
   useEffect(() => {
-    fetchEquipments()
-    fetchEngines()
-  }, [])
+    fetchEquipments();
+    fetchEngines();
+  }, []);
 
-  const columns = getEquipmentColumns({
-    onEdit: handleEdit,
-    onDelete: handleDelete,
-  })
-
-  function handleEdit(item: Equipment) {
-    // TODO: open edit modal
-    console.log("edit", item)
-  }
-
-  async function handleDelete(item: Equipment) {
-    await deleteEquipment(item.id)
-  }
+  const columns = getEquipmentColumns();
 
   function handleCloseModal() {
-    setIsOpen({ type: null })
+    setIsOpen({ type: null });
   }
 
   const btnBaseSx = {
@@ -74,7 +66,7 @@ export default function InventoryPage() {
     px: 2,
     py: 1,
     width: { xs: "100%", sm: "auto" },
-  }
+  };
 
   return (
     <>
@@ -188,14 +180,17 @@ export default function InventoryPage() {
         ) : (
           <EquipmentTable
             columns={columns}
-            rows={equipments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)}
+            rows={equipments.slice(
+              page * rowsPerPage,
+              page * rowsPerPage + rowsPerPage,
+            )}
             page={page}
             rowsPerPage={rowsPerPage}
             totalCount={equipments.length}
             onPageChange={setPage}
             onRowsPerPageChange={(rpp) => {
-              setRowsPerPage(rpp)
-              setPage(0)
+              setRowsPerPage(rpp);
+              setPage(0);
             }}
           />
         )}
@@ -218,5 +213,5 @@ export default function InventoryPage() {
         equipments={equipments}
       />
     </>
-  )
+  );
 }

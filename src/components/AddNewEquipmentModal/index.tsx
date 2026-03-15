@@ -1,19 +1,29 @@
-import { useState } from "react"
+import { useState } from "react";
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, Button, Typography, IconButton,
-  Box, Divider, FormControlLabel, Checkbox, Alert,
-} from "@mui/material"
-import CloseIcon from "@mui/icons-material/Close"
-import AddIcon from "@mui/icons-material/Add"
-import { useTheme } from "@mui/material/styles"
-import { EquipmentFormData } from "@/utilities/types/equipment.types"
-import { useEquipment } from "@/hooks/useEquipment"
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Typography,
+  IconButton,
+  Box,
+  Divider,
+  FormControlLabel,
+  Checkbox,
+  Alert,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import { useTheme } from "@mui/material/styles";
+import { EquipmentFormData } from "@/utilities/types/equipment.types";
+import { useEquipment } from "@/hooks/useEquipment";
 
 interface AddNewEquipmentModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess?: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const DEFAULT_FORM: EquipmentFormData = {
@@ -22,46 +32,53 @@ const DEFAULT_FORM: EquipmentFormData = {
   total_in_service: "",
   total_down: "",
   is_power_tool: false,
-}
+};
 
 export default function AddNewEquipmentModal({
   isOpen,
   onClose,
   onSuccess,
 }: AddNewEquipmentModalProps) {
-  const theme = useTheme()
-  const { createEquipment, loading, error } = useEquipment()
-  const [form, setForm] = useState<EquipmentFormData>(DEFAULT_FORM)
+  const theme = useTheme();
+  const { createEquipment, loading, error } = useEquipment();
+  const [form, setForm] = useState<EquipmentFormData>(DEFAULT_FORM);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   function handleCheckbox(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, is_power_tool: e.target.checked }))
+    setForm((prev) => ({ ...prev, is_power_tool: e.target.checked }));
   }
 
   async function handleSubmit() {
     await createEquipment({
       name: form.name,
-      total_quantity: form.total_quantity === "" ? null : Number(form.total_quantity),
-      total_in_service: form.total_in_service === "" ? null : Number(form.total_in_service),
+      total_quantity:
+        form.total_quantity === "" ? null : Number(form.total_quantity),
+      total_in_service:
+        form.total_in_service === "" ? null : Number(form.total_in_service),
       total_down: form.total_down === "" ? null : Number(form.total_down),
       is_power_tool: form.is_power_tool,
-    })
-    if (!error) handleClose()
-    onSuccess?.()
+    });
+    if (!error) handleClose();
+    onSuccess?.();
   }
 
   function handleClose() {
-    setForm(DEFAULT_FORM)
-    onClose()
+    setForm(DEFAULT_FORM);
+    onClose();
   }
 
   const fieldSx = {
-    "& .MuiInputLabel-root": { color: "rgba(255,255,255,0.5)", fontWeight: 600 },
-    "& .MuiInputLabel-root.Mui-focused": { color: theme.palette.secondary.main },
+    "& .MuiInputLabel-root": {
+      color: "rgba(255,255,255,0.5)",
+      fontWeight: 600,
+    },
+    "& .MuiInputLabel-root.Mui-focused": {
+      color: theme.palette.secondary.main,
+    },
     "& .MuiOutlinedInput-root": {
       color: "#e8e8e8",
       bgcolor: "rgba(255,255,255,0.04)",
@@ -70,7 +87,7 @@ export default function AddNewEquipmentModal({
       "&:hover fieldset": { borderColor: "rgba(255,255,255,0.25)" },
       "&.Mui-focused fieldset": { borderColor: theme.palette.secondary.main },
     },
-  }
+  };
 
   return (
     <Dialog
@@ -91,26 +108,47 @@ export default function AddNewEquipmentModal({
         sx={{
           bgcolor: `${theme.palette.primary.main}cc`,
           borderBottom: `1px solid ${theme.palette.secondary.main}25`,
-          px: 3, py: 1.5,
+          px: 3,
+          py: 1.5,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
         }}
       >
         <Box>
-          <Typography variant="subtitle1" sx={{ fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#f0f0f0" }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "#f0f0f0",
+            }}
+          >
             Add New Equipment
           </Typography>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
             Register a new equipment to the inventory
           </Typography>
         </Box>
-        <IconButton size="small" onClick={handleClose} sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}>
+        <IconButton
+          size="small"
+          onClick={handleClose}
+          sx={{ color: "rgba(255,255,255,0.4)", "&:hover": { color: "#fff" } }}
+        >
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.5 }}>
+      <DialogContent
+        sx={{
+          px: 3,
+          py: 2.5,
+          display: "flex",
+          flexDirection: "column",
+          gap: 2.5,
+        }}
+      >
         {error && <Alert severity="error">{error}</Alert>}
 
         <TextField
@@ -169,17 +207,38 @@ export default function AddNewEquipmentModal({
             <Checkbox
               checked={form.is_power_tool}
               onChange={handleCheckbox}
-              sx={{ color: "rgba(255,255,255,0.3)", "&.Mui-checked": { color: theme.palette.secondary.main } }}
+              sx={{
+                color: "rgba(255,255,255,0.3)",
+                "&.Mui-checked": { color: theme.palette.secondary.main },
+              }}
             />
           }
-          label={<Typography variant="body2" sx={{ color: "rgba(255,255,255,0.65)" }}>Power Tool</Typography>}
+          label={
+            <Typography
+              variant="body2"
+              sx={{ color: "rgba(255,255,255,0.65)" }}
+            >
+              Power Tool
+            </Typography>
+          }
         />
       </DialogContent>
 
       <Divider sx={{ borderColor: `${theme.palette.secondary.main}20` }} />
 
       <DialogActions sx={{ px: 3, py: 1.5, gap: 1 }}>
-        <Button onClick={handleClose} variant="outlined" sx={{ color: "rgba(255,255,255,0.5)", borderColor: "rgba(255,255,255,0.15)", "&:hover": { borderColor: "rgba(255,255,255,0.35)", color: "rgba(255,255,255,0.85)" } }}>
+        <Button
+          onClick={handleClose}
+          variant="outlined"
+          sx={{
+            color: "rgba(255,255,255,0.5)",
+            borderColor: "rgba(255,255,255,0.15)",
+            "&:hover": {
+              borderColor: "rgba(255,255,255,0.35)",
+              color: "rgba(255,255,255,0.85)",
+            },
+          }}
+        >
           Cancel
         </Button>
         <Button
@@ -194,5 +253,5 @@ export default function AddNewEquipmentModal({
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }
