@@ -9,13 +9,17 @@ const ROUTE_PERMISSIONS: Record<string, number[]> = {
 export async function middleware(request: NextRequest) {
   const { supabase, response } = updateSession(request);
 
+  if (request.nextUrl.pathname.startsWith("/Auth/callback")) {
+    return response;
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   // Not logged in — redirect to login
   if (!user && request.nextUrl.pathname.startsWith("/Home")) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // Check route permissions
@@ -42,5 +46,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/Home/:path*", "/Reports/:path*", "/Personnel/:path*"],
+  matcher: [
+    "/Home/:path*",
+    "/Reports/:path*",
+    "/Personnel/:path*",
+    "/Auth/callback",
+  ],
 };

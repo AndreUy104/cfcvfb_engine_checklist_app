@@ -37,7 +37,19 @@ export function useAuth(): UseAuthReturn {
     };
 
     fetchUser();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      setIsFirstLogin(currentUser?.user_metadata?.is_first_login === true);
+    });
+
+    // Cleanup listener on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async ({ email, password }: LoginCredentials) => {
