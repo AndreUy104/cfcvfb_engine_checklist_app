@@ -28,27 +28,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, Theme } from "@mui/material/styles";
 import { EngineWithType } from "@/utilities/types/engine.types";
 import { Equipment } from "@/utilities/types/equipment.types";
 import { useEngineEquipment } from "@/hooks/useEngineEquipment";
 import { useAuth } from "@/hooks/useAuth";
 import EquipmentSearchFilter from "@/components/EquipmentSearchFilter";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-/** One compartment slot: quantity placed there + location label. */
 interface CompartmentEntry {
   quantity: number;
   location: string;
 }
 
-/**
- * Per-equipment selection.
- * `compartments` always has ≥ 1 entry while the row is checked.
- */
 interface SelectedEquipment {
   equipment_id: number;
   compartments: CompartmentEntry[];
@@ -61,10 +52,6 @@ interface AssignEquipmentToApparatusModalProps {
   equipments?: Equipment[];
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 const makeEntry = (): CompartmentEntry => ({ quantity: 1, location: "" });
 
 const defaultSelected = (eq: Equipment): SelectedEquipment => ({
@@ -72,9 +59,136 @@ const defaultSelected = (eq: Equipment): SelectedEquipment => ({
   compartments: [makeEntry()],
 });
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+interface CompartmentRowsProps {
+  equipId: number;
+  entries: CompartmentEntry[];
+  maxQty: number;
+  theme: Theme;
+  inlineFieldSx: object;
+  onFieldChange: (
+    equipId: number,
+    idx: number,
+    field: keyof CompartmentEntry,
+    value: string,
+  ) => void;
+  onAdd: (equipId: number) => void;
+  onRemove: (equipId: number, idx: number) => void;
+}
+
+function CompartmentRows({
+  equipId,
+  entries,
+  maxQty,
+  theme,
+  inlineFieldSx,
+  onFieldChange,
+  onAdd,
+  onRemove,
+}: CompartmentRowsProps) {
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+      {entries.map((entry, idx) => (
+        <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Index pill */}
+          <Typography
+            variant="caption"
+            sx={{
+              color: `${theme.palette.secondary.main}70`,
+              fontWeight: 700,
+              fontSize: "0.65rem",
+              minWidth: 14,
+              textAlign: "center",
+              flexShrink: 0,
+            }}
+          >
+            {idx + 1}
+          </Typography>
+
+          {/* Qty */}
+          <TextField
+            type="number"
+            label="Qty"
+            value={entry.quantity}
+            onChange={(e) =>
+              onFieldChange(equipId, idx, "quantity", e.target.value)
+            }
+            onClick={(e) => e.stopPropagation()}
+            inputProps={{ min: 1, max: maxQty }}
+            size="small"
+            sx={{ ...inlineFieldSx, width: 68, flexShrink: 0 }}
+          />
+
+          {/* Location */}
+          <TextField
+            label="Compartment"
+            placeholder="e.g. Left Side, Rear"
+            value={entry.location}
+            onChange={(e) =>
+              onFieldChange(equipId, idx, "location", e.target.value)
+            }
+            onClick={(e) => e.stopPropagation()}
+            size="small"
+            sx={{ ...inlineFieldSx, flexGrow: 1 }}
+          />
+
+          {/* Remove */}
+          <Tooltip
+            title={
+              entries.length === 1 ? "Deselect equipment" : "Remove compartment"
+            }
+            placement="top"
+          >
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(equipId, idx);
+              }}
+              sx={{
+                color: "rgba(255,255,255,0.18)",
+                p: 0.4,
+                flexShrink: 0,
+                "&:hover": { color: "#f44336" },
+                transition: "color 0.15s",
+              }}
+            >
+              <DeleteOutlineIcon sx={{ fontSize: "0.95rem" }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ))}
+
+      {/* Add compartment */}
+      <Button
+        size="small"
+        startIcon={<AddIcon sx={{ fontSize: "0.8rem !important" }} />}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAdd(equipId);
+        }}
+        sx={{
+          alignSelf: "flex-start",
+          color: theme.palette.secondary.main,
+          fontSize: "0.7rem",
+          fontWeight: 700,
+          letterSpacing: "0.04em",
+          textTransform: "none",
+          px: 1,
+          py: 0.35,
+          mt: 0.25,
+          border: `1px dashed ${theme.palette.secondary.main}40`,
+          borderRadius: 1,
+          "&:hover": {
+            bgcolor: `${theme.palette.secondary.main}10`,
+            border: `1px dashed ${theme.palette.secondary.main}80`,
+          },
+        }}
+      >
+        Add compartment
+      </Button>
+    </Box>
+  );
+}
 
 export default function AssignEquipmentToApparatusModal({
   isOpen,
@@ -106,7 +220,6 @@ export default function AssignEquipmentToApparatusModal({
 
   const selectedCount = Object.keys(selected).length;
 
-  // Total DB rows that will be inserted on submit
   const totalRows = Object.values(selected).reduce(
     (sum, s) => sum + s.compartments.length,
     0,
@@ -163,7 +276,6 @@ export default function AssignEquipmentToApparatusModal({
     });
   }
 
-  /** Removing the last compartment also deselects the equipment. */
   function handleRemoveCompartment(equipId: number, idx: number) {
     setSelected((prev) => {
       if (!prev[equipId]) return prev;
@@ -181,7 +293,6 @@ export default function AssignEquipmentToApparatusModal({
 
   async function handleSubmit() {
     if (!selectedEngineId) return;
-    // Each (equipment × compartment) pair → one DB row
     await Promise.all(
       Object.values(selected).flatMap((s) =>
         s.compartments.map((c) =>
@@ -271,120 +382,9 @@ export default function AssignEquipmentToApparatusModal({
     "&.Mui-checked": { color: theme.palette.secondary.main },
   };
 
-  function CompartmentRows({
-    equipId,
-    maxQty,
-  }: {
-    equipId: number;
-    maxQty: number;
-  }) {
-    const entries = selected[equipId]?.compartments ?? [];
-    return (
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-        {entries.map((entry, idx) => (
-          <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {/* Index pill */}
-            <Typography
-              variant="caption"
-              sx={{
-                color: `${theme.palette.secondary.main}70`,
-                fontWeight: 700,
-                fontSize: "0.65rem",
-                minWidth: 14,
-                textAlign: "center",
-                flexShrink: 0,
-              }}
-            >
-              {idx + 1}
-            </Typography>
-
-            {/* Qty */}
-            <TextField
-              type="number"
-              label="Qty"
-              value={entry.quantity}
-              onChange={(e) =>
-                handleCompartmentField(equipId, idx, "quantity", e.target.value)
-              }
-              onClick={(e) => e.stopPropagation()}
-              inputProps={{ min: 1, max: maxQty }}
-              size="small"
-              sx={{ ...inlineFieldSx, width: 68, flexShrink: 0 }}
-            />
-
-            {/* Location */}
-            <TextField
-              label="Compartment"
-              placeholder="e.g. Left Side, Rear"
-              value={entry.location}
-              onChange={(e) =>
-                handleCompartmentField(equipId, idx, "location", e.target.value)
-              }
-              onClick={(e) => e.stopPropagation()}
-              size="small"
-              sx={{ ...inlineFieldSx, flexGrow: 1 }}
-            />
-
-            {/* Remove */}
-            <Tooltip
-              title={
-                entries.length === 1
-                  ? "Deselect equipment"
-                  : "Remove compartment"
-              }
-              placement="top"
-            >
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveCompartment(equipId, idx);
-                }}
-                sx={{
-                  color: "rgba(255,255,255,0.18)",
-                  p: 0.4,
-                  flexShrink: 0,
-                  "&:hover": { color: "#f44336" },
-                  transition: "color 0.15s",
-                }}
-              >
-                <DeleteOutlineIcon sx={{ fontSize: "0.95rem" }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ))}
-
-        {/* Add compartment */}
-        <Button
-          size="small"
-          startIcon={<AddIcon sx={{ fontSize: "0.8rem !important" }} />}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleAddCompartment(equipId);
-          }}
-          sx={{
-            alignSelf: "flex-start",
-            color: theme.palette.secondary.main,
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            textTransform: "none",
-            px: 1,
-            py: 0.35,
-            mt: 0.25,
-            border: `1px dashed ${theme.palette.secondary.main}40`,
-            borderRadius: 1,
-            "&:hover": {
-              bgcolor: `${theme.palette.secondary.main}10`,
-              border: `1px dashed ${theme.palette.secondary.main}80`,
-            },
-          }}
-        >
-          Add compartment
-        </Button>
-      </Box>
-    );
-  }
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
 
   return (
     <Dialog
@@ -623,7 +623,13 @@ export default function AssignEquipmentToApparatusModal({
                     >
                       <CompartmentRows
                         equipId={eq.id}
+                        entries={selected[eq.id]?.compartments ?? []}
                         maxQty={eq.total_in_service ?? 99}
+                        theme={theme}
+                        inlineFieldSx={inlineFieldSx}
+                        onFieldChange={handleCompartmentField}
+                        onAdd={handleAddCompartment}
+                        onRemove={handleRemoveCompartment}
                       />
                     </Box>
                   </Collapse>
@@ -697,7 +703,6 @@ export default function AssignEquipmentToApparatusModal({
                           transition: "background 0.15s",
                         }}
                       >
-                        {/* Checkbox */}
                         <TableCell
                           padding="checkbox"
                           sx={{
@@ -716,7 +721,6 @@ export default function AssignEquipmentToApparatusModal({
                           />
                         </TableCell>
 
-                        {/* Name */}
                         <TableCell
                           sx={{ ...cellSx, verticalAlign: "top", pt: 1.5 }}
                         >
@@ -734,7 +738,6 @@ export default function AssignEquipmentToApparatusModal({
                           </Typography>
                         </TableCell>
 
-                        {/* In service */}
                         <TableCell
                           align="center"
                           sx={{ ...cellSx, verticalAlign: "top", pt: 1.5 }}
@@ -751,7 +754,6 @@ export default function AssignEquipmentToApparatusModal({
                           />
                         </TableCell>
 
-                        {/* Compartments column */}
                         <TableCell
                           sx={{ ...cellSx, py: 1, minWidth: 380 }}
                           onClick={(e) => e.stopPropagation()}
@@ -759,7 +761,13 @@ export default function AssignEquipmentToApparatusModal({
                           {isChecked ? (
                             <CompartmentRows
                               equipId={eq.id}
+                              entries={selected[eq.id]?.compartments ?? []}
                               maxQty={eq.total_in_service ?? 99}
+                              theme={theme}
+                              inlineFieldSx={inlineFieldSx}
+                              onFieldChange={handleCompartmentField}
+                              onAdd={handleAddCompartment}
+                              onRemove={handleRemoveCompartment}
                             />
                           ) : (
                             <Typography
