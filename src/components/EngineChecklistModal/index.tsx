@@ -63,13 +63,17 @@ export default function EngineCheckModal({
     loading: inspectionLoading,
     error: inspectionError,
   } = useInspection();
+
   const [form, setForm] = useState<EngineCheckFormData>({
     apparatusChecks: DEFAULT_APPARATUS_CHECKS,
     equipmentChecks: [],
     remarks: "",
   });
 
-  // Rebuild equipment checks when assignedEquipment changes
+  // Rebuild equipment checks when assignedEquipment changes.
+  // Each EngineEquipmentWithDetails row (which maps to one compartment entry)
+  // becomes its own EquipmentCheck so the inspector verifies every
+  // compartment slot individually.
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
@@ -77,6 +81,8 @@ export default function EngineCheckModal({
         (ae): EquipmentCheck => ({
           engineEquipmentId: ae.id,
           name: ae.Equipments?.name ?? "Unknown Equipment",
+          quantity_assigned: ae.quantity_assigned ?? null,
+          location_on_truck: ae.location_on_truck ?? null,
           status: null,
           notes: "",
         }),
@@ -123,7 +129,6 @@ export default function EngineCheckModal({
 
   async function handleSubmit() {
     if (!apparatus?.id) return;
-
     const success = await submitInspection(apparatus.id, form);
     if (success) onClose();
   }
@@ -137,6 +142,11 @@ export default function EngineCheckModal({
     minHeight: 40,
     "&.Mui-selected": { color: theme.palette.secondary.main },
   };
+
+  // Derive a count of unchecked equipment rows to surface on the tab label
+  const uncheckedCount = form.equipmentChecks.filter(
+    (eq) => eq.status === null,
+  ).length;
 
   return (
     <Dialog
@@ -194,6 +204,7 @@ export default function EngineCheckModal({
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
+
       {/* Tabs */}
       <Box
         sx={{
@@ -214,14 +225,21 @@ export default function EngineCheckModal({
           }}
         >
           <Tab label="Apparatus" sx={tabSx} />
-          <Tab label="Equipment" sx={tabSx} />
+          <Tab
+            label={
+              uncheckedCount > 0 && !equipmentLoading
+                ? `Equipment (${uncheckedCount} remaining)`
+                : "Equipment"
+            }
+            sx={tabSx}
+          />
         </Tabs>
       </Box>
 
       {/* Body */}
       <DialogContent sx={{ px: 3, py: 2, overflowY: "auto", flexGrow: 1 }}>
         {inspectionError && (
-          <Alert severity="error" sx={{ mx: 3, mt: 1 }}>
+          <Alert severity="error" sx={{ mb: 2 }}>
             {inspectionError}
           </Alert>
         )}
