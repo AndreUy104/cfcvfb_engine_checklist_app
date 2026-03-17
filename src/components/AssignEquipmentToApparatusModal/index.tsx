@@ -20,21 +20,38 @@ import {
   TableRow,
   Chip,
   Collapse,
+  Tooltip,
   useMediaQuery,
   Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import { useTheme } from "@mui/material/styles";
 import { EngineWithType } from "@/utilities/types/engine.types";
 import { Equipment } from "@/utilities/types/equipment.types";
 import { useEngineEquipment } from "@/hooks/useEngineEquipment";
 import { useAuth } from "@/hooks/useAuth";
+import EquipmentSearchFilter from "@/components/EquipmentSearchFilter";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+/** One compartment slot: quantity placed there + location label. */
+interface CompartmentEntry {
+  quantity: number;
+  location: string;
+}
+
+/**
+ * Per-equipment selection.
+ * `compartments` always has ≥ 1 entry while the row is checked.
+ */
 interface SelectedEquipment {
   equipment_id: number;
-  quantity_assigned: number;
-  location_on_truck: string | null;
+  compartments: CompartmentEntry[];
 }
 
 interface AssignEquipmentToApparatusModalProps {
@@ -43,6 +60,21 @@ interface AssignEquipmentToApparatusModalProps {
   engines?: EngineWithType[];
   equipments?: Equipment[];
 }
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const makeEntry = (): CompartmentEntry => ({ quantity: 1, location: "" });
+
+const defaultSelected = (eq: Equipment): SelectedEquipment => ({
+  equipment_id: eq.id,
+  compartments: [makeEntry()],
+});
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function AssignEquipmentToApparatusModal({
   isOpen,
@@ -59,8 +91,30 @@ export default function AssignEquipmentToApparatusModal({
   const [selected, setSelected] = useState<Record<number, SelectedEquipment>>(
     {},
   );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Always derived from the prop — never stale even with async data
+  const filteredEquipments = searchQuery.trim()
+    ? equipments.filter((eq) => {
+        const lower = searchQuery.toLowerCase();
+        return (
+          eq.name?.toLowerCase().includes(lower) ||
+          String(eq.id).includes(lower)
+        );
+      })
+    : equipments;
 
   const selectedCount = Object.keys(selected).length;
+
+  // Total DB rows that will be inserted on submit
+  const totalRows = Object.values(selected).reduce(
+    (sum, s) => sum + s.compartments.length,
+    0,
+  );
+
+  // -------------------------------------------------------------------------
+  // Handlers
+  // -------------------------------------------------------------------------
 
   function handleToggle(eq: Equipment) {
     setSelected((prev) => {
@@ -69,61 +123,91 @@ export default function AssignEquipmentToApparatusModal({
         delete next[eq.id];
         return next;
       }
+      return { ...prev, [eq.id]: defaultSelected(eq) };
+    });
+  }
+
+  function handleCompartmentField(
+    equipId: number,
+    idx: number,
+    field: keyof CompartmentEntry,
+    value: string,
+  ) {
+    setSelected((prev) => {
+      if (!prev[equipId]) return prev;
+      const compartments = prev[equipId].compartments.map((c, i) =>
+        i !== idx
+          ? c
+          : {
+              ...c,
+              [field]:
+                field === "quantity"
+                  ? Math.max(1, parseInt(value) || 1)
+                  : value,
+            },
+      );
+      return { ...prev, [equipId]: { ...prev[equipId], compartments } };
+    });
+  }
+
+  function handleAddCompartment(equipId: number) {
+    setSelected((prev) => {
+      if (!prev[equipId]) return prev;
       return {
         ...prev,
-        [eq.id]: {
-          equipment_id: eq.id,
-          quantity_assigned: 1,
-          location_on_truck: null,
+        [equipId]: {
+          ...prev[equipId],
+          compartments: [...prev[equipId].compartments, makeEntry()],
         },
       };
     });
   }
 
-  function handleField(
-    id: number,
-    field: keyof Omit<SelectedEquipment, "equipment_id">,
-    value: string,
-  ) {
+  /** Removing the last compartment also deselects the equipment. */
+  function handleRemoveCompartment(equipId: number, idx: number) {
     setSelected((prev) => {
-      if (!prev[id]) return prev;
-      return {
-        ...prev,
-        [id]: {
-          ...prev[id],
-          [field]:
-            field === "quantity_assigned"
-              ? Math.max(1, parseInt(value) || 1)
-              : value,
-        },
-      };
+      if (!prev[equipId]) return prev;
+      const compartments = prev[equipId].compartments.filter(
+        (_, i) => i !== idx,
+      );
+      if (compartments.length === 0) {
+        const next = { ...prev };
+        delete next[equipId];
+        return next;
+      }
+      return { ...prev, [equipId]: { ...prev[equipId], compartments } };
     });
   }
 
   async function handleSubmit() {
     if (!selectedEngineId) return;
-
-    // Insert each selected equipment as a separate assignment row
+    // Each (equipment × compartment) pair → one DB row
     await Promise.all(
-      Object.values(selected).map((s) =>
-        assignEquipment({
-          engine_id: selectedEngineId,
-          equipment_id: s.equipment_id,
-          quantity_assigned: s.quantity_assigned,
-          location_on_truck: s.location_on_truck,
-          assigned_by: user?.id ? Number(user.id) : null,
-        }),
+      Object.values(selected).flatMap((s) =>
+        s.compartments.map((c) =>
+          assignEquipment({
+            engine_id: selectedEngineId,
+            equipment_id: s.equipment_id,
+            quantity_assigned: c.quantity,
+            location_on_truck: c.location || null,
+            assigned_by: user?.id ? Number(user.id) : null,
+          }),
+        ),
       ),
     );
-
     if (!error) handleClose();
   }
 
   function handleClose() {
     setSelectedEngineId("");
     setSelected({});
+    setSearchQuery("");
     onClose();
   }
+
+  // -------------------------------------------------------------------------
+  // Style tokens
+  // -------------------------------------------------------------------------
 
   const fieldSx = {
     "& .MuiInputLabel-root": {
@@ -187,11 +271,126 @@ export default function AssignEquipmentToApparatusModal({
     "&.Mui-checked": { color: theme.palette.secondary.main },
   };
 
+  function CompartmentRows({
+    equipId,
+    maxQty,
+  }: {
+    equipId: number;
+    maxQty: number;
+  }) {
+    const entries = selected[equipId]?.compartments ?? [];
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+        {entries.map((entry, idx) => (
+          <Box key={idx} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {/* Index pill */}
+            <Typography
+              variant="caption"
+              sx={{
+                color: `${theme.palette.secondary.main}70`,
+                fontWeight: 700,
+                fontSize: "0.65rem",
+                minWidth: 14,
+                textAlign: "center",
+                flexShrink: 0,
+              }}
+            >
+              {idx + 1}
+            </Typography>
+
+            {/* Qty */}
+            <TextField
+              type="number"
+              label="Qty"
+              value={entry.quantity}
+              onChange={(e) =>
+                handleCompartmentField(equipId, idx, "quantity", e.target.value)
+              }
+              onClick={(e) => e.stopPropagation()}
+              inputProps={{ min: 1, max: maxQty }}
+              size="small"
+              sx={{ ...inlineFieldSx, width: 68, flexShrink: 0 }}
+            />
+
+            {/* Location */}
+            <TextField
+              label="Compartment"
+              placeholder="e.g. Left Side, Rear"
+              value={entry.location}
+              onChange={(e) =>
+                handleCompartmentField(equipId, idx, "location", e.target.value)
+              }
+              onClick={(e) => e.stopPropagation()}
+              size="small"
+              sx={{ ...inlineFieldSx, flexGrow: 1 }}
+            />
+
+            {/* Remove */}
+            <Tooltip
+              title={
+                entries.length === 1
+                  ? "Deselect equipment"
+                  : "Remove compartment"
+              }
+              placement="top"
+            >
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemoveCompartment(equipId, idx);
+                }}
+                sx={{
+                  color: "rgba(255,255,255,0.18)",
+                  p: 0.4,
+                  flexShrink: 0,
+                  "&:hover": { color: "#f44336" },
+                  transition: "color 0.15s",
+                }}
+              >
+                <DeleteOutlineIcon sx={{ fontSize: "0.95rem" }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        ))}
+
+        {/* Add compartment */}
+        <Button
+          size="small"
+          startIcon={<AddIcon sx={{ fontSize: "0.8rem !important" }} />}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddCompartment(equipId);
+          }}
+          sx={{
+            alignSelf: "flex-start",
+            color: theme.palette.secondary.main,
+            fontSize: "0.7rem",
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            textTransform: "none",
+            px: 1,
+            py: 0.35,
+            mt: 0.25,
+            border: `1px dashed ${theme.palette.secondary.main}40`,
+            borderRadius: 1,
+            "&:hover": {
+              bgcolor: `${theme.palette.secondary.main}10`,
+              border: `1px dashed ${theme.palette.secondary.main}80`,
+            },
+          }}
+        >
+          Add compartment
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
-      maxWidth="sm"
+      maxWidth="md"
       fullWidth
       fullScreen={isMobile}
       PaperProps={{
@@ -231,7 +430,8 @@ export default function AssignEquipmentToApparatusModal({
             Assign Equipment
           </Typography>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
-            Assign equipment to an apparatus
+            Assign equipment to an apparatus — split across multiple
+            compartments
           </Typography>
         </Box>
         <IconButton
@@ -257,7 +457,7 @@ export default function AssignEquipmentToApparatusModal({
       >
         {error && <Alert severity="error">{error}</Alert>}
 
-        {/* Engine dropdown */}
+        {/* Apparatus dropdown */}
         <TextField
           select
           label="Apparatus"
@@ -277,51 +477,78 @@ export default function AssignEquipmentToApparatusModal({
           ))}
         </TextField>
 
-        {/* Section label */}
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography
-            variant="caption"
+        {/* Section header + search */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Box
             sx={{
-              color: "rgba(255,255,255,0.4)",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            Available Equipment
-          </Typography>
-          {selectedCount > 0 && (
-            <Chip
-              label={`${selectedCount} selected`}
-              size="small"
+            <Typography
+              variant="caption"
               sx={{
-                bgcolor: `${theme.palette.secondary.main}20`,
-                color: theme.palette.secondary.main,
-                border: `1px solid ${theme.palette.secondary.main}40`,
+                color: "rgba(255,255,255,0.4)",
                 fontWeight: 700,
-                fontSize: "0.7rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
               }}
-            />
-          )}
+            >
+              Available Equipment
+            </Typography>
+
+            {selectedCount > 0 && (
+              <Box sx={{ display: "flex", gap: 0.75, alignItems: "center" }}>
+                <Chip
+                  label={`${selectedCount} item${selectedCount > 1 ? "s" : ""}`}
+                  size="small"
+                  sx={{
+                    bgcolor: `${theme.palette.secondary.main}20`,
+                    color: theme.palette.secondary.main,
+                    border: `1px solid ${theme.palette.secondary.main}40`,
+                    fontWeight: 700,
+                    fontSize: "0.7rem",
+                  }}
+                />
+                <Chip
+                  label={`${totalRows} row${totalRows > 1 ? "s" : ""} to assign`}
+                  size="small"
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.05)",
+                    color: "rgba(255,255,255,0.4)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    fontWeight: 600,
+                    fontSize: "0.7rem",
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+
+          <EquipmentSearchFilter
+            equipments={equipments}
+            value={searchQuery}
+            onQueryChange={setSearchQuery}
+            showResultCount
+          />
         </Box>
 
-        {/* Equipment list */}
+        {/* ---- Mobile card list ---- */}
         {isMobile ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {equipments.map((eq) => {
+            {filteredEquipments.map((eq) => {
               const isChecked = Boolean(selected[eq.id]);
               return (
                 <Box
                   key={eq.id}
                   sx={{
                     borderRadius: 1.5,
-                    border: `1px solid ${isChecked ? `${theme.palette.secondary.main}50` : "rgba(255,255,255,0.08)"}`,
+                    border: `1px solid ${
+                      isChecked
+                        ? `${theme.palette.secondary.main}50`
+                        : "rgba(255,255,255,0.08)"
+                    }`,
                     bgcolor: isChecked
                       ? `${theme.palette.secondary.main}10`
                       : "rgba(255,255,255,0.03)",
@@ -368,47 +595,35 @@ export default function AssignEquipmentToApparatusModal({
                       </Typography>
                     </Box>
                     {isChecked && (
-                      <TextField
-                        type="number"
-                        label="Qty"
-                        value={selected[eq.id].quantity_assigned}
-                        onChange={(e) =>
-                          handleField(
-                            eq.id,
-                            "quantity_assigned",
-                            e.target.value,
-                          )
-                        }
-                        onClick={(e) => e.stopPropagation()}
-                        inputProps={{ min: 1, max: eq.total_in_service ?? 1 }}
+                      <Chip
+                        label={`${selected[eq.id].compartments.length} compartment${
+                          selected[eq.id].compartments.length > 1 ? "s" : ""
+                        }`}
                         size="small"
-                        sx={{ ...inlineFieldSx, width: 70 }}
+                        sx={{
+                          bgcolor: `${theme.palette.secondary.main}15`,
+                          color: theme.palette.secondary.main,
+                          border: `1px solid ${theme.palette.secondary.main}30`,
+                          fontSize: "0.65rem",
+                          height: 18,
+                        }}
                       />
                     )}
                   </Box>
+
                   <Collapse in={isChecked}>
                     <Box
                       sx={{
                         px: 1.5,
                         pb: 1.5,
+                        pt: 1.25,
                         borderTop: `1px solid ${theme.palette.secondary.main}20`,
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <TextField
-                        label="Compartment"
-                        placeholder="e.g. Left Side, Rear, Officer Side"
-                        value={selected[eq.id]?.location_on_truck ?? ""}
-                        onChange={(e) =>
-                          handleField(
-                            eq.id,
-                            "location_on_truck",
-                            e.target.value,
-                          )
-                        }
-                        size="small"
-                        fullWidth
-                        sx={{ ...inlineFieldSx, mt: 1.25 }}
+                      <CompartmentRows
+                        equipId={eq.id}
+                        maxQty={eq.total_in_service ?? 99}
                       />
                     </Box>
                   </Collapse>
@@ -417,6 +632,7 @@ export default function AssignEquipmentToApparatusModal({
             })}
           </Box>
         ) : (
+          /* ---- Desktop table ---- */
           <TableContainer
             sx={{
               borderRadius: 1.5,
@@ -439,126 +655,125 @@ export default function AssignEquipmentToApparatusModal({
                   <TableCell align="center" sx={headerCellSx}>
                     In Service
                   </TableCell>
-                  <TableCell align="center" sx={headerCellSx}>
-                    Qty
+                  <TableCell sx={{ ...headerCellSx, minWidth: 380 }}>
+                    Compartments
                   </TableCell>
-                  <TableCell sx={headerCellSx}>Compartment</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {equipments.map((eq) => {
-                  const isChecked = Boolean(selected[eq.id]);
-                  return (
-                    <TableRow
-                      key={eq.id}
-                      onClick={() => handleToggle(eq)}
+                {filteredEquipments.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      align="center"
                       sx={{
-                        cursor: "pointer",
-                        bgcolor: isChecked
-                          ? `${theme.palette.secondary.main}10`
-                          : "transparent",
-                        "&:hover": { bgcolor: "rgba(255,255,255,0.04)" },
-                        transition: "background 0.15s",
+                        ...cellSx,
+                        py: 4,
+                        color: "rgba(255,255,255,0.2)",
+                        fontStyle: "italic",
                       }}
                     >
-                      <TableCell padding="checkbox" sx={{ ...cellSx, pl: 1.5 }}>
-                        <Checkbox
-                          checked={isChecked}
-                          size="small"
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={() => handleToggle(eq)}
-                          sx={checkboxSx}
-                        />
-                      </TableCell>
-                      <TableCell sx={cellSx}>
-                        <Typography
-                          variant="body2"
+                      No equipment matches your search
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEquipments.map((eq) => {
+                    const isChecked = Boolean(selected[eq.id]);
+                    return (
+                      <TableRow
+                        key={eq.id}
+                        onClick={() => handleToggle(eq)}
+                        sx={{
+                          cursor: "pointer",
+                          verticalAlign: "top",
+                          bgcolor: isChecked
+                            ? `${theme.palette.secondary.main}08`
+                            : "transparent",
+                          "&:hover": {
+                            bgcolor: isChecked
+                              ? `${theme.palette.secondary.main}12`
+                              : "rgba(255,255,255,0.03)",
+                          },
+                          transition: "background 0.15s",
+                        }}
+                      >
+                        {/* Checkbox */}
+                        <TableCell
+                          padding="checkbox"
                           sx={{
-                            color: isChecked
-                              ? "#fff"
-                              : "rgba(255,255,255,0.75)",
-                            fontWeight: isChecked ? 600 : 400,
-                            fontSize: "0.825rem",
+                            ...cellSx,
+                            pl: 1.5,
+                            verticalAlign: "top",
+                            pt: 1.5,
                           }}
                         >
-                          {eq.name}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center" sx={cellSx}>
-                        <Chip
-                          label={eq.total_in_service ?? 0}
-                          size="small"
-                          sx={{
-                            bgcolor: "rgba(255,255,255,0.06)",
-                            color: "rgba(255,255,255,0.6)",
-                            fontSize: "0.7rem",
-                            height: 20,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        sx={{ ...cellSx, width: 80 }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {isChecked ? (
-                          <TextField
-                            type="number"
-                            value={selected[eq.id].quantity_assigned}
-                            onChange={(e) =>
-                              handleField(
-                                eq.id,
-                                "quantity_assigned",
-                                e.target.value,
-                              )
-                            }
-                            inputProps={{
-                              min: 1,
-                              max: eq.total_in_service ?? 1,
+                          <Checkbox
+                            checked={isChecked}
+                            size="small"
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={() => handleToggle(eq)}
+                            sx={checkboxSx}
+                          />
+                        </TableCell>
+
+                        {/* Name */}
+                        <TableCell
+                          sx={{ ...cellSx, verticalAlign: "top", pt: 1.5 }}
+                        >
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: isChecked
+                                ? "#fff"
+                                : "rgba(255,255,255,0.75)",
+                              fontWeight: isChecked ? 600 : 400,
+                              fontSize: "0.825rem",
                             }}
-                            size="small"
-                            sx={{ ...inlineFieldSx, width: 64 }}
-                          />
-                        ) : (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "rgba(255,255,255,0.2)" }}
                           >
-                            —
+                            {eq.name}
                           </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell
-                        sx={{ ...cellSx, minWidth: 160 }}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {isChecked ? (
-                          <TextField
-                            placeholder="e.g. Left Side, Rear"
-                            value={selected[eq.id].location_on_truck ?? ""}
-                            onChange={(e) =>
-                              handleField(
-                                eq.id,
-                                "location_on_truck",
-                                e.target.value,
-                              )
-                            }
+                        </TableCell>
+
+                        {/* In service */}
+                        <TableCell
+                          align="center"
+                          sx={{ ...cellSx, verticalAlign: "top", pt: 1.5 }}
+                        >
+                          <Chip
+                            label={eq.total_in_service ?? 0}
                             size="small"
-                            fullWidth
-                            sx={inlineFieldSx}
+                            sx={{
+                              bgcolor: "rgba(255,255,255,0.06)",
+                              color: "rgba(255,255,255,0.6)",
+                              fontSize: "0.7rem",
+                              height: 20,
+                            }}
                           />
-                        ) : (
-                          <Typography
-                            variant="caption"
-                            sx={{ color: "rgba(255,255,255,0.2)" }}
-                          >
-                            —
-                          </Typography>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        </TableCell>
+
+                        {/* Compartments column */}
+                        <TableCell
+                          sx={{ ...cellSx, py: 1, minWidth: 380 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {isChecked ? (
+                            <CompartmentRows
+                              equipId={eq.id}
+                              maxQty={eq.total_in_service ?? 99}
+                            />
+                          ) : (
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "rgba(255,255,255,0.15)" }}
+                            >
+                              — select to configure
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
               </TableBody>
             </Table>
           </TableContainer>
@@ -596,7 +811,9 @@ export default function AssignEquipmentToApparatusModal({
             "&.Mui-disabled": { opacity: 0.4 },
           }}
         >
-          {selectedCount > 0 ? `Assign (${selectedCount})` : "Assign"}
+          {totalRows > 0
+            ? `Assign (${totalRows} row${totalRows > 1 ? "s" : ""})`
+            : "Assign"}
         </Button>
       </DialogActions>
     </Dialog>
