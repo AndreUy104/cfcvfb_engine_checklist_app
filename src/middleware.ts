@@ -2,6 +2,9 @@ import { updateSession } from "./library/supabase/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
 const ROUTE_PERMISSIONS: Record<string, number[]> = {
+  "/Home": [1, 2, 3, 4],
+  "/PowerTools": [1, 2, 3],
+  "/Inventory": [1, 2, 3],
   "/Reports": [2, 3],
   "/Personnel": [3],
 };
@@ -17,8 +20,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Not logged in — redirect to login
-  if (!user && request.nextUrl.pathname.startsWith("/Home")) {
+  if (!user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
@@ -28,7 +30,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route),
   )?.[1];
 
-  if (requiredPositions && user) {
+  if (requiredPositions) {
     const { data: userProfile } = await supabase
       .from("Users")
       .select("position_id")
@@ -48,6 +50,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/Home/:path*",
+    "/PowerTools/:path*",
+    "/Inventory/:path*",
     "/Reports/:path*",
     "/Personnel/:path*",
     "/Auth/callback",

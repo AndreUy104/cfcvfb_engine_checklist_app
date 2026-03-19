@@ -15,9 +15,9 @@ interface UseEquipmentReturn {
   fetchEquipments: () => Promise<void>;
   fetchEquipment: (id: number) => Promise<void>;
   fetchPowerTools: () => Promise<void>;
-  createEquipment: (data: EquipmentInsert) => Promise<void>;
-  updateEquipment: (id: number, data: EquipmentUpdate) => Promise<void>;
-  deleteEquipment: (id: number) => Promise<void>;
+  createEquipment: (data: EquipmentInsert) => Promise<boolean>;
+  updateEquipment: (id: number, data: EquipmentUpdate) => Promise<boolean>;
+  deleteEquipment: (id: number) => Promise<boolean>;
 }
 
 export function useEquipment(): UseEquipmentReturn {
@@ -36,7 +36,6 @@ export function useEquipment(): UseEquipmentReturn {
     const { data, error } = await supabase
       .from("Equipments")
       .select("*")
-      .eq("is_power_tool", false)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -86,7 +85,7 @@ export function useEquipment(): UseEquipmentReturn {
     setLoading(false);
   }, [supabase]);
 
-  const createEquipment = async (data: EquipmentInsert) => {
+  const createEquipment = async (data: EquipmentInsert): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
@@ -94,14 +93,19 @@ export function useEquipment(): UseEquipmentReturn {
 
     if (error) {
       setError(error.message);
-    } else {
-      await fetchEquipments();
+      setLoading(false);
+      return false;
     }
 
+    await fetchEquipments();
     setLoading(false);
+    return true;
   };
 
-  const updateEquipment = async (id: number, data: EquipmentUpdate) => {
+  const updateEquipment = async (
+    id: number,
+    data: EquipmentUpdate,
+  ): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
@@ -112,14 +116,16 @@ export function useEquipment(): UseEquipmentReturn {
 
     if (error) {
       setError(error.message);
-    } else {
-      await fetchEquipments();
+      setLoading(false);
+      return false;
     }
 
+    await fetchEquipments();
     setLoading(false);
+    return true;
   };
 
-  const deleteEquipment = async (id: number) => {
+  const deleteEquipment = async (id: number): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
@@ -127,11 +133,13 @@ export function useEquipment(): UseEquipmentReturn {
 
     if (error) {
       setError(error.message);
-    } else {
-      setEquipments((prev) => prev.filter((e) => e.id !== id));
+      setLoading(false);
+      return false;
     }
 
+    setEquipments((prev) => prev.filter((e) => e.id !== id));
     setLoading(false);
+    return true;
   };
 
   return {

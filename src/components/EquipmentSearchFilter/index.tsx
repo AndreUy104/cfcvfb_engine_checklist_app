@@ -18,6 +18,7 @@ interface EquipmentSearchFilterProps {
   value?: string;
   onQueryChange?: (query: string) => void;
   showResultCount?: boolean;
+  variant?: "modal" | "page";
 }
 
 export function useEquipmentSearch(equipments: Equipment[]) {
@@ -41,8 +42,10 @@ export default function EquipmentSearchFilter({
   value,
   onQueryChange,
   showResultCount = true,
+  variant = "modal",
 }: EquipmentSearchFilterProps) {
   const theme = useTheme();
+  const isPage = variant === "page";
 
   // Internal state used only in uncontrolled mode
   const [internalQuery, setInternalQuery] = useState("");
@@ -72,6 +75,71 @@ export default function EquipmentSearchFilter({
       }).length
     : equipments.length;
 
+  // ---------------------------------------------------------------------------
+  // Variant-aware style tokens
+  // ---------------------------------------------------------------------------
+
+  const iconColor = isFiltered
+    ? theme.palette.secondary.main
+    : isPage
+      ? "rgba(0,0,0,0.4)"
+      : "rgba(255,255,255,0.3)";
+
+  const inputSx = isPage
+    ? {
+        "& .MuiOutlinedInput-root": {
+          color: "rgba(0,0,0,0.87)",
+          bgcolor: "#fff",
+          borderRadius: 1.5,
+          fontSize: "0.875rem",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+          "& fieldset": {
+            borderColor: isFiltered
+              ? theme.palette.secondary.main
+              : "rgba(0,0,0,0.23)",
+            transition: "border-color 0.2s",
+          },
+          "&:hover fieldset": {
+            borderColor: isFiltered
+              ? theme.palette.secondary.main
+              : "rgba(0,0,0,0.45)",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: theme.palette.secondary.main,
+          },
+        },
+        "& .MuiInputBase-input::placeholder": {
+          color: "rgba(0,0,0,0.38)",
+          fontSize: "0.875rem",
+        },
+      }
+    : {
+        "& .MuiOutlinedInput-root": {
+          color: "#e8e8e8",
+          bgcolor: "rgba(255,255,255,0.04)",
+          borderRadius: 1.5,
+          fontSize: "0.825rem",
+          "& fieldset": {
+            borderColor: isFiltered
+              ? `${theme.palette.secondary.main}50`
+              : "rgba(255,255,255,0.1)",
+            transition: "border-color 0.2s",
+          },
+          "&:hover fieldset": {
+            borderColor: isFiltered
+              ? `${theme.palette.secondary.main}80`
+              : "rgba(255,255,255,0.22)",
+          },
+          "&.Mui-focused fieldset": {
+            borderColor: theme.palette.secondary.main,
+          },
+        },
+        "& .MuiInputBase-input::placeholder": {
+          color: "rgba(255,255,255,0.25)",
+          fontSize: "0.8rem",
+        },
+      };
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
       <TextField
@@ -86,10 +154,8 @@ export default function EquipmentSearchFilter({
             <InputAdornment position="start">
               <FilterListIcon
                 sx={{
-                  fontSize: "1rem",
-                  color: isFiltered
-                    ? theme.palette.secondary.main
-                    : "rgba(255,255,255,0.3)",
+                  fontSize: isPage ? "1.1rem" : "1rem",
+                  color: iconColor,
                   transition: "color 0.2s",
                 }}
               />
@@ -103,47 +169,29 @@ export default function EquipmentSearchFilter({
                   onClick={handleClear}
                   edge="end"
                   sx={{
-                    color: "rgba(255,255,255,0.4)",
+                    color: isPage
+                      ? "rgba(0,0,0,0.45)"
+                      : "rgba(255,255,255,0.4)",
                     p: 0.4,
-                    "&:hover": { color: "#fff" },
+                    "&:hover": { color: isPage ? "rgba(0,0,0,0.87)" : "#fff" },
                   }}
                 >
                   <ClearIcon sx={{ fontSize: "0.9rem" }} />
                 </IconButton>
               ) : (
                 <SearchIcon
-                  sx={{ fontSize: "0.95rem", color: "rgba(255,255,255,0.2)" }}
+                  sx={{
+                    fontSize: "0.95rem",
+                    color: isPage
+                      ? "rgba(0,0,0,0.35)"
+                      : "rgba(255,255,255,0.2)",
+                  }}
                 />
               )}
             </InputAdornment>
           ),
         }}
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            color: "#e8e8e8",
-            bgcolor: "rgba(255,255,255,0.04)",
-            borderRadius: 1.5,
-            fontSize: "0.825rem",
-            "& fieldset": {
-              borderColor: isFiltered
-                ? `${theme.palette.secondary.main}50`
-                : "rgba(255,255,255,0.1)",
-              transition: "border-color 0.2s",
-            },
-            "&:hover fieldset": {
-              borderColor: isFiltered
-                ? `${theme.palette.secondary.main}80`
-                : "rgba(255,255,255,0.22)",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: theme.palette.secondary.main,
-            },
-          },
-          "& .MuiInputBase-input::placeholder": {
-            color: "rgba(255,255,255,0.25)",
-            fontSize: "0.8rem",
-          },
-        }}
+        sx={inputSx}
       />
 
       {/* Result-count badge – only visible when a query is active */}
@@ -176,7 +224,10 @@ export default function EquipmentSearchFilter({
           {visibleCount === 0 && (
             <Typography
               variant="caption"
-              sx={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}
+              sx={{
+                color: isPage ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.3)",
+                fontSize: "0.72rem",
+              }}
             >
               Try a different term
             </Typography>

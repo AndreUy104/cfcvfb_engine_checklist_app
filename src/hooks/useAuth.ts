@@ -10,6 +10,7 @@ interface LoginCredentials {
 
 interface UseAuthReturn {
   user: User | null;
+  positionId: number | null;
   loading: boolean;
   error: string | null;
   isFirstLogin: boolean;
@@ -23,9 +24,19 @@ export function useAuth(): UseAuthReturn {
   const supabase = useMemo(() => createClient(), []);
 
   const [user, setUser] = useState<User | null>(null);
+  const [positionId, setPositionId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+
+  async function fetchPositionId(userId: string) {
+    const { data } = await supabase
+      .from("Users")
+      .select("position_id")
+      .eq("auth_id", userId)
+      .single();
+    setPositionId(data?.position_id ?? null);
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -34,19 +45,24 @@ export function useAuth(): UseAuthReturn {
       } = await supabase.auth.getUser();
       setUser(user);
       setIsFirstLogin(user?.user_metadata?.is_first_login === true);
+      if (user) await fetchPositionId(user.id);
     };
 
     fetchUser();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       setIsFirstLogin(currentUser?.user_metadata?.is_first_login === true);
+      if (currentUser) {
+        await fetchPositionId(currentUser.id);
+      } else {
+        setPositionId(null);
+      }
     });
 
-    // Cleanup listener on unmount
     return () => {
       subscription.unsubscribe();
     };
@@ -70,6 +86,7 @@ export function useAuth(): UseAuthReturn {
     const firstLogin = data.user?.user_metadata?.is_first_login === true;
     setUser(data.user);
     setIsFirstLogin(firstLogin);
+    if (data.user) await fetchPositionId(data.user.id);
     setLoading(false);
     router.push("/Home");
   };
@@ -87,6 +104,7 @@ export function useAuth(): UseAuthReturn {
     }
 
     setUser(null);
+    setPositionId(null);
     setIsFirstLogin(false);
     setLoading(false);
     router.push("/");
@@ -112,5 +130,14 @@ export function useAuth(): UseAuthReturn {
     setLoading(false);
   };
 
-  return { user, loading, error, isFirstLogin, login, logout, changePassword };
+  return {
+    user,
+    positionId,
+    loading,
+    error,
+    isFirstLogin,
+    login,
+    logout,
+    changePassword,
+  };
 }
