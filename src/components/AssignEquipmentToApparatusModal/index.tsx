@@ -316,10 +316,6 @@ export default function AssignEquipmentToApparatusModal({
     onClose();
   }
 
-  // -------------------------------------------------------------------------
-  // Style tokens
-  // -------------------------------------------------------------------------
-
   const fieldSx = {
     "& .MuiInputLabel-root": {
       color: "rgba(255,255,255,0.5)",
@@ -382,10 +378,6 @@ export default function AssignEquipmentToApparatusModal({
     "&.Mui-checked": { color: theme.palette.secondary.main },
   };
 
-  // -------------------------------------------------------------------------
-  // Render
-  // -------------------------------------------------------------------------
-
   return (
     <Dialog
       open={isOpen}
@@ -443,7 +435,6 @@ export default function AssignEquipmentToApparatusModal({
         </IconButton>
       </DialogTitle>
 
-      {/* Body */}
       <DialogContent
         sx={{
           px: 3,
@@ -534,7 +525,6 @@ export default function AssignEquipmentToApparatusModal({
           />
         </Box>
 
-        {/* ---- Mobile card list ---- */}
         {isMobile ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {filteredEquipments.map((eq) => {

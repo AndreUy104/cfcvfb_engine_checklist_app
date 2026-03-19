@@ -13,10 +13,10 @@ export interface EquipmentColumn {
 }
 
 export interface EquipmentFormData {
-  name: string;
-  total_quantity: number | "";
-  total_in_service: number | "";
-  total_down: number | "";
+  name: string | null;
+  total_quantity: string | number | "";
+  total_in_service: string | number | "";
+  total_down: string | number | "";
   is_power_tool: boolean;
 }
 

@@ -39,7 +39,7 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   route?: string;
-  allowedPositions?: number[]; // undefined = accessible by all
+  allowedPositions?: number[];
 }
 
 const ALL_MENU_ITEMS: MenuItem[] = [
@@ -54,25 +54,27 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     label: "Power Tools Inventory",
     icon: <Build />,
     route: "/PowerTools",
+    allowedPositions: [1, 2, 3],
   },
   {
     id: "inventory",
     label: "Inventory",
     icon: <Inventory />,
     route: "/Inventory",
+    allowedPositions: [1, 2, 3],
   },
   {
     id: "reports",
     label: "Reports",
     icon: <Description />,
     route: "/Reports",
-    allowedPositions: [2, 3], // position_id 2 and 3 only
+    allowedPositions: [2, 3],
   },
   {
     id: "personnel",
     label: "Personnel",
     icon: <Group />,
-    allowedPositions: [3], // position_id 3 only
+    allowedPositions: [3],
   },
 ];
 
@@ -89,10 +91,9 @@ export default function Sidebar() {
 
   const toggleDrawer = () => setOpen(!open);
 
-  // Filter menu items based on position_id
   const visibleMenuItems = ALL_MENU_ITEMS.filter((item) => {
-    if (!item.allowedPositions) return true; // no restriction
-    if (!profile?.position_id) return false; // profile not loaded yet or no position
+    if (!item.allowedPositions) return true;
+    if (!profile?.position_id) return false;
     return item.allowedPositions.includes(profile.position_id);
   });
 

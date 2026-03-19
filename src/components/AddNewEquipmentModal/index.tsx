@@ -16,14 +16,20 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { useTheme } from "@mui/material/styles";
-import { EquipmentFormData } from "@/utilities/types/equipment.types";
+import {
+  Equipment,
+  EquipmentFormData,
+} from "@/utilities/types/equipment.types";
 import { useEquipment } from "@/hooks/useEquipment";
 
 interface AddNewEquipmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  /** When provided the modal switches to edit mode and pre-fills the form */
+  editTarget?: Equipment | null;
 }
 
 const DEFAULT_FORM: EquipmentFormData = {
@@ -34,14 +40,34 @@ const DEFAULT_FORM: EquipmentFormData = {
   is_power_tool: false,
 };
 
+function equipmentToForm(equipment: Equipment): EquipmentFormData {
+  return {
+    name: equipment.name,
+    total_quantity:
+      equipment.total_quantity != null ? String(equipment.total_quantity) : "",
+    total_in_service:
+      equipment.total_in_service != null
+        ? String(equipment.total_in_service)
+        : "",
+    total_down:
+      equipment.total_down != null ? String(equipment.total_down) : "",
+    is_power_tool: equipment.is_power_tool ?? false,
+  };
+}
+
 export default function AddNewEquipmentModal({
   isOpen,
   onClose,
   onSuccess,
+  editTarget,
 }: AddNewEquipmentModalProps) {
   const theme = useTheme();
-  const { createEquipment, loading, error } = useEquipment();
-  const [form, setForm] = useState<EquipmentFormData>(DEFAULT_FORM);
+  const { createEquipment, updateEquipment, loading, error } = useEquipment();
+  const [form, setForm] = useState<EquipmentFormData>(() =>
+    editTarget ? equipmentToForm(editTarget) : DEFAULT_FORM,
+  );
+
+  const isEditMode = Boolean(editTarget);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -53,7 +79,7 @@ export default function AddNewEquipmentModal({
   }
 
   async function handleSubmit() {
-    await createEquipment({
+    const payload = {
       name: form.name,
       total_quantity:
         form.total_quantity === "" ? null : Number(form.total_quantity),
@@ -61,9 +87,17 @@ export default function AddNewEquipmentModal({
         form.total_in_service === "" ? null : Number(form.total_in_service),
       total_down: form.total_down === "" ? null : Number(form.total_down),
       is_power_tool: form.is_power_tool,
-    });
-    if (!error) handleClose();
-    onSuccess?.();
+    };
+
+    const success =
+      isEditMode && editTarget
+        ? await updateEquipment(editTarget.id, payload)
+        : await createEquipment(payload);
+
+    if (success) {
+      onSuccess?.();
+      handleClose();
+    }
   }
 
   function handleClose() {
@@ -125,10 +159,12 @@ export default function AddNewEquipmentModal({
               color: "#f0f0f0",
             }}
           >
-            Add New Equipment
+            {isEditMode ? "Edit Equipment" : "Add New Equipment"}
           </Typography>
           <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.4)" }}>
-            Register a new equipment to the inventory
+            {isEditMode
+              ? `Editing: ${editTarget?.name}`
+              : "Register a new equipment to the inventory"}
           </Typography>
         </Box>
         <IconButton
@@ -143,14 +179,15 @@ export default function AddNewEquipmentModal({
       <DialogContent
         sx={{
           px: 3,
-          py: 2.5,
+          pt: 3,
+          pb: 2.5,
           display: "flex",
           flexDirection: "column",
           gap: 2.5,
         }}
       >
         {error && <Alert severity="error">{error}</Alert>}
-
+        <br />
         <TextField
           label="Equipment Name"
           name="name"
@@ -245,11 +282,11 @@ export default function AddNewEquipmentModal({
           onClick={handleSubmit}
           variant="contained"
           color="secondary"
-          startIcon={<AddIcon />}
+          startIcon={isEditMode ? <SaveOutlinedIcon /> : <AddIcon />}
           disabled={loading || !form.name}
           sx={{ fontWeight: 700, letterSpacing: "0.06em" }}
         >
-          Add Equipment
+          {isEditMode ? "Save Changes" : "Add Equipment"}
         </Button>
       </DialogActions>
     </Dialog>
