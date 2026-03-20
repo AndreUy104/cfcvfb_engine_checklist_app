@@ -1,12 +1,13 @@
 import { updateSession } from "./library/supabase/middleware";
 import { NextRequest, NextResponse } from "next/server";
+import { PERMISSION } from "./utilities/constants/auth.constant";
 
-const ROUTE_PERMISSIONS: Record<string, number[]> = {
-  "/Home": [1, 2, 3, 4],
-  "/PowerTools": [1, 2, 3],
-  "/Inventory": [1, 2, 3],
-  "/Reports": [2, 3],
-  "/Personnel": [3],
+const ROUTE_PERMISSIONS: Record<string, readonly number[]> = {
+  "/Home": PERMISSION.ALL,
+  "/PowerTools": PERMISSION.REGULARS,
+  "/Inventory": PERMISSION.REGULARS,
+  "/Reports": PERMISSION.OIC_AND_OFFICER,
+  "/Personnel": PERMISSION.OFFICER_ONLY,
 };
 
 export async function middleware(request: NextRequest) {

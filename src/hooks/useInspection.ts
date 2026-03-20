@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { EngineCheckFormData } from "@/utilities/types/engineCheck.types";
 import { InspectionWithDetails } from "@/utilities/types/inspection.types";
 import { TablesInsert } from "@/utilities/types/database";
+import toast from "react-hot-toast";
 
 interface UseInspectionReturn {
   inspections: InspectionWithDetails[];
@@ -134,10 +135,11 @@ export function useInspection(): UseInspectionReturn {
         if (equipmentError) {
           setError(equipmentError.message);
           setLoading(false);
+          toast.error(equipmentError.message);
           return false;
         }
       }
-
+      toast.success("Inspection Submitted");
       setLoading(false);
       return true;
     },

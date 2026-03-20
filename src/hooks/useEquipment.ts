@@ -5,6 +5,7 @@ import type {
   EquipmentInsert,
   EquipmentUpdate,
 } from "@/utilities/types/equipment.types";
+import toast from "react-hot-toast";
 
 interface UseEquipmentReturn {
   equipments: Equipment[];
@@ -93,11 +94,13 @@ export function useEquipment(): UseEquipmentReturn {
 
     if (error) {
       setError(error.message);
+      toast.error(error.message);
       setLoading(false);
       return false;
     }
 
     await fetchEquipments();
+    toast.success("Equipment Added");
     setLoading(false);
     return true;
   };
@@ -133,12 +136,14 @@ export function useEquipment(): UseEquipmentReturn {
 
     if (error) {
       setError(error.message);
+      toast.error(error.message);
       setLoading(false);
       return false;
     }
 
     setEquipments((prev) => prev.filter((e) => e.id !== id));
     setLoading(false);
+    toast.success("Equipment Deleted");
     return true;
   };
 

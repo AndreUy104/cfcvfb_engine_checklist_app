@@ -5,6 +5,7 @@ import type {
   PowerToolInspectionWithDetails,
   PowerToolInspectionFormData,
 } from "@/utilities/types/inspection.types";
+import toast from "react-hot-toast";
 
 interface UsePowerToolInspectionReturn {
   inspections: PowerToolInspectionWithDetails[];
@@ -96,10 +97,12 @@ export function usePowerToolInspection(): UsePowerToolInspectionReturn {
 
       if (insertError) {
         setError(insertError.message);
+        toast.error(insertError.message);
         setLoading(false);
         return false;
       }
 
+      toast.success("Inspection Submitted");
       setLoading(false);
       return true;
     },
