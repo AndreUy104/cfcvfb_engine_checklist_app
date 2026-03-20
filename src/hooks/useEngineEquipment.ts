@@ -5,6 +5,7 @@ import type {
   EngineEquipmentUpdate,
   EngineEquipmentWithDetails,
 } from "@/utilities/types/engineEquipment.types";
+import toast from "react-hot-toast";
 
 interface UseEngineEquipmentReturn {
   assignments: EngineEquipmentWithDetails[];
@@ -56,9 +57,11 @@ export function useEngineEquipment(): UseEngineEquipmentReturn {
     const { error } = await supabase.from("Engines_Equipment").insert(data);
 
     if (error) {
+      toast.error(error.message);
       setError(error.message);
     } else if (data.engine_id) {
       await fetchEquipmentByEngine(data.engine_id);
+      toast.success("Equipment Assigned");
     }
 
     setLoading(false);
