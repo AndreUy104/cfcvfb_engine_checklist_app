@@ -96,7 +96,8 @@ export function useInspection(): UseInspectionReturn {
         water_level: form.apparatusChecks.waterLevel,
         fuel_level: form.apparatusChecks.fuelLevel,
         lights_and_siren: form.apparatusChecks.lightsAndSiren,
-        battery_status: form.apparatusChecks.batteryStatus,
+        battery_a_voltage: form.apparatusChecks.batteryAVoltage,
+        battery_b_voltage: form.apparatusChecks.batteryBVoltage,
         radio_status: form.apparatusChecks.communicationRadio,
         remarks: form.remarks || null,
       };

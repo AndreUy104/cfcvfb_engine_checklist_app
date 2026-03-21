@@ -30,11 +30,9 @@ function getOverallStatus(inspection: InspectionWithDetails): {
   label: string;
   color: "success" | "error";
 } {
-  const hasFaulty = [
-    inspection.battery_status,
-    inspection.lights_and_siren,
-    inspection.radio_status,
-  ].some((c) => c === "Faulty" || c === "Dead" || c === "Weak");
+  const hasFaulty = [inspection.lights_and_siren, inspection.radio_status].some(
+    (c) => c === "Faulty",
+  );
 
   const hasDown = inspection.Inspection_Equipment_Results.some(
     (r) => r.status === false,

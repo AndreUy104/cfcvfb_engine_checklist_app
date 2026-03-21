@@ -9,19 +9,16 @@ export interface ApparatusChecks {
   waterLevel: LevelStatus;
   fuelLevel: LevelStatus;
   lightsAndSiren: TwoOptionStatus;
-  batteryStatus: ThreeOptionStatus;
+  batteryAVoltage: string;
+  batteryBVoltage: string;
   communicationRadio: TwoOptionStatus;
 }
 
 export interface EquipmentCheck {
   engineEquipmentId: Tables<"Inspection_Equipment_Results">["engine_equipment_id"];
   name: string;
-  // Nullable — row starts unchecked; null until the inspector picks a status
   status: EquipmentStatus | null;
   notes: Tables<"Inspection_Equipment_Results">["notes"];
-  // Sourced from the linked Engines_Equipment row, not Inspection_Equipment_Results
-  // itself, but carried here so the checklist UI can display them without
-  // a separate lookup.
   quantity_assigned: Tables<"Engines_Equipment">["quantity_assigned"];
   location_on_truck: Tables<"Engines_Equipment">["location_on_truck"];
 }

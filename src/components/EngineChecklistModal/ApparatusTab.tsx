@@ -1,9 +1,8 @@
-import { Box } from "@mui/material";
+import { Box, TextField, useTheme } from "@mui/material";
 import {
   ApparatusChecks,
   LevelStatus,
   TwoOptionStatus,
-  ThreeOptionStatus,
 } from "@/utilities/types/engineCheck.types";
 import CheckRow from "./Checkrow";
 import LevelRow from "./Levelrow";
@@ -25,27 +24,6 @@ const twoOptionColors: Record<
   },
 };
 
-const batteryColors: Record<
-  string,
-  { bg: string; border: string; color: string }
-> = {
-  Good: {
-    bg: "rgba(34,197,94,0.15)",
-    border: "rgba(34,197,94,0.5)",
-    color: "#22c55e",
-  },
-  Weak: {
-    bg: "rgba(245,158,11,0.15)",
-    border: "rgba(245,158,11,0.5)",
-    color: "#f59e0b",
-  },
-  Dead: {
-    bg: "rgba(239,68,68,0.15)",
-    border: "rgba(239,68,68,0.5)",
-    color: "#ef4444",
-  },
-};
-
 interface ApparatusTabProps {
   checks: ApparatusChecks;
   onChange: <K extends keyof ApparatusChecks>(
@@ -55,6 +33,7 @@ interface ApparatusTabProps {
 }
 
 export default function ApparatusTab({ checks, onChange }: ApparatusTabProps) {
+  const theme = useTheme();
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       <LevelRow
@@ -75,12 +54,60 @@ export default function ApparatusTab({ checks, onChange }: ApparatusTabProps) {
           colorMap={twoOptionColors}
         />
       </CheckRow>
-      <CheckRow label="Battery Status">
-        <StatusToggle
-          options={["Good", "Weak", "Dead"] as const}
-          value={checks.batteryStatus}
-          onChange={(v) => onChange("batteryStatus", v as ThreeOptionStatus)}
-          colorMap={batteryColors}
+      <CheckRow label="Battery A Voltage">
+        <TextField
+          size="small"
+          placeholder="e.g. 12.6V"
+          value={checks.batteryAVoltage}
+          onChange={(e) => onChange("batteryAVoltage", e.target.value)}
+          sx={{
+            "& .MuiInputLabel-root": {
+              color: "rgba(255,255,255,0.5)",
+              fontWeight: 600,
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: theme.palette.secondary.main,
+            },
+            "& .MuiOutlinedInput-root": {
+              color: "#e8e8e8",
+              bgcolor: "rgba(255,255,255,0.04)",
+              borderRadius: 1.5,
+              fontSize: "0.875rem",
+              "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.25)" },
+              "&.Mui-focused fieldset": {
+                borderColor: theme.palette.secondary.main,
+              },
+            },
+          }}
+        />
+      </CheckRow>
+      <CheckRow label="Battery B Voltage">
+        <TextField
+          size="small"
+          placeholder="e.g. 12.6V"
+          value={checks.batteryBVoltage}
+          onChange={(e) => onChange("batteryBVoltage", e.target.value)}
+          sx={{
+            "& .MuiInputLabel-root": {
+              color: "rgba(255,255,255,0.5)",
+              fontWeight: 600,
+            },
+            "& .MuiInputLabel-root.Mui-focused": {
+              color: theme.palette.secondary.main,
+            },
+            "& .MuiOutlinedInput-root": {
+              color: "#e8e8e8",
+              bgcolor: "rgba(255,255,255,0.04)",
+              borderRadius: 1.5,
+              fontSize: "0.875rem",
+              "& fieldset": { borderColor: "rgba(255,255,255,0.12)" },
+              "&:hover fieldset": { borderColor: "rgba(255,255,255,0.25)" },
+              "&.Mui-focused fieldset": {
+                borderColor: theme.palette.secondary.main,
+              },
+            },
+          }}
         />
       </CheckRow>
       <CheckRow label="Communication Radio">
