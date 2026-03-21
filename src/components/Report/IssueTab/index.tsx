@@ -15,7 +15,6 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   IssueWithDetails,
@@ -44,7 +43,12 @@ const PRIORITY_COLORS: Record<IssuePriority, "success" | "warning" | "error"> =
     High: "error",
   };
 
-export default function IssuesTab({ issues, loading, error }: IssuesTabProps) {
+export default function IssuesTab({
+  issues,
+  loading,
+  error,
+  onRefresh,
+}: IssuesTabProps) {
   const [selectedIssue, setSelectedIssue] = useState<IssueWithDetails | null>(
     null,
   );
@@ -111,7 +115,7 @@ export default function IssuesTab({ issues, loading, error }: IssuesTabProps) {
                       </Typography>
                     </TableCell>
                     <TableCell>{issue.type}</TableCell>
-                    <TableCell>{issue.Users?.name ?? "—"}</TableCell>
+                    <TableCell>{issue.ReportedBy?.name ?? "—"}</TableCell>
                     <TableCell>
                       {new Date(issue.created_at).toLocaleDateString("en-PH", {
                         month: "short",
@@ -158,9 +162,11 @@ export default function IssuesTab({ issues, loading, error }: IssuesTabProps) {
       )}
 
       <IssueDetailModal
+        key={selectedIssue?.id}
         isOpen={Boolean(selectedIssue)}
         onClose={() => setSelectedIssue(null)}
         issue={selectedIssue}
+        onRefresh={onRefresh}
       />
     </>
   );

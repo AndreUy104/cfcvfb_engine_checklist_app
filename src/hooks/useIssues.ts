@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type {
   IssueWithDetails,
   IssueFormData,
-  IssueStatus,
+  UpdateIssueFormData,
 } from "@/utilities/types/issues.types";
 
 interface UseIssuesReturn {
@@ -13,7 +13,7 @@ interface UseIssuesReturn {
   error: string | null;
   fetchIssues: () => Promise<void>;
   submitIssue: (form: IssueFormData) => Promise<boolean>;
-  updateIssueStatus: (id: number, status: IssueStatus) => Promise<boolean>;
+  updateIssue: (id: number, form: UpdateIssueFormData) => Promise<boolean>;
 }
 
 export function useIssues(): UseIssuesReturn {
@@ -33,13 +33,15 @@ export function useIssues(): UseIssuesReturn {
       .select(
         `
         *,
-        Users (id, name, unit_number),
+        ReportedBy:reported_by (id, name, unit_number),
+        UpdatedBy:updated_by (id, name),
         Engines (id, name),
         Equipment:equipment_id (id, name),
         PowerTool:power_tool_id (id, name)
-    `,
+        `,
       )
       .order("created_at", { ascending: false });
+
     if (error) {
       setError(error.message);
     } else {
@@ -90,14 +92,35 @@ export function useIssues(): UseIssuesReturn {
     [supabase, user, fetchIssues],
   );
 
-  const updateIssueStatus = useCallback(
-    async (id: number, status: IssueStatus): Promise<boolean> => {
+  const updateIssue = useCallback(
+    async (id: number, form: UpdateIssueFormData): Promise<boolean> => {
       setLoading(true);
       setError(null);
 
+      const { data: userData } = await supabase
+        .from("Users")
+        .select("id")
+        .eq("auth_id", user?.id ?? "")
+        .maybeSingle();
+
+      if (!userData) {
+        setError("User profile not found.");
+        setLoading(false);
+        return false;
+      }
+
       const { error } = await supabase
         .from("Issues")
-        .update({ status })
+        .update({
+          status: form.status,
+          priority: form.priority,
+          qa_by: form.qa_by || null,
+          repaired_by: form.repaired_by || null,
+          start_date: form.start_date,
+          end_date: form.end_date,
+          updated_by: userData.id,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", id);
 
       if (error) {
@@ -107,12 +130,21 @@ export function useIssues(): UseIssuesReturn {
       }
 
       setIssues((prev) =>
-        prev.map((issue) => (issue.id === id ? { ...issue, status } : issue)),
+        prev.map((issue) =>
+          issue.id === id
+            ? {
+                ...issue,
+                ...form,
+                updated_by: userData.id,
+                updated_at: new Date().toISOString(),
+              }
+            : issue,
+        ),
       );
       setLoading(false);
       return true;
     },
-    [supabase],
+    [supabase, user],
   );
 
   return {
@@ -121,6 +153,6 @@ export function useIssues(): UseIssuesReturn {
     error,
     fetchIssues,
     submitIssue,
-    updateIssueStatus,
+    updateIssue,
   };
 }
