@@ -162,20 +162,14 @@ export default function InspectionDetailModal({
                 </Box>
               </Box>
               <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  fontWeight={700}
-                  sx={{ textTransform: "uppercase", letterSpacing: "0.06em" }}
-                >
-                  Battery
-                </Typography>
-                <Box mt={0.5}>
-                  <StatusChip
-                    value={engineInspection.battery_status}
-                    goodValue="Good"
-                  />
-                </Box>
+                <InfoRow
+                  label="Battery A Voltage"
+                  value={`${engineInspection.battery_a_voltage}V`}
+                />
+                <InfoRow
+                  label="Battery B Voltage"
+                  value={`${engineInspection.battery_b_voltage}V`}
+                />
               </Box>
               <Box>
                 <Typography

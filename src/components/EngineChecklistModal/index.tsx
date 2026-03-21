@@ -43,7 +43,8 @@ const DEFAULT_APPARATUS_CHECKS: ApparatusChecks = {
   waterLevel: "Empty",
   fuelLevel: "Empty",
   lightsAndSiren: null,
-  batteryStatus: null,
+  batteryAVoltage: "",
+  batteryBVoltage: "",
   communicationRadio: null,
 };
 
