@@ -1,9 +1,9 @@
-import { EquipmentCheck } from "@/utilities/types/engineCheck.types";
+type WithLocation = { location_on_truck?: string | null };
 
-export interface CompartmentGroup {
+export interface CompartmentGroup<T extends WithLocation = WithLocation> {
   label: string;
   normalized: string;
-  entries: EquipmentCheck[];
+  entries: T[];
 }
 
 export function normalizeCompartment(
@@ -13,20 +13,20 @@ export function normalizeCompartment(
   return location.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-export function groupByCompartment(
-  checks: EquipmentCheck[],
-): CompartmentGroup[] {
-  const map = new Map<string, CompartmentGroup>();
-  for (const check of checks) {
-    const key = normalizeCompartment(check.location_on_truck);
+export function groupByCompartment<T extends WithLocation>(
+  items: T[],
+): CompartmentGroup<T>[] {
+  const map = new Map<string, CompartmentGroup<T>>();
+  for (const item of items) {
+    const key = normalizeCompartment(item.location_on_truck);
     const existing = map.get(key);
     if (existing) {
-      existing.entries.push(check);
+      existing.entries.push(item);
     } else {
       map.set(key, {
-        label: check.location_on_truck?.trim() ?? "No compartment",
+        label: item.location_on_truck?.trim() ?? "No compartment",
         normalized: key,
-        entries: [check],
+        entries: [item],
       });
     }
   }

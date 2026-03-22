@@ -268,6 +268,9 @@ export default function HomePage() {
           equipmentLoading={equipmentLoading}
           onSave={handleSaveEngine}
           onRemoveEquipment={handleRemoveEquipment}
+          onAssigned={() =>
+            modal.engine && fetchEquipmentByEngine(modal.engine.id)
+          }
         />
       )}
 

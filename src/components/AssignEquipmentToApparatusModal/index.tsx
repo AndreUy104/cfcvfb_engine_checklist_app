@@ -201,13 +201,14 @@ export default function AssignEquipmentToApparatusModal({
   const { assignEquipment, loading, error } = useEngineEquipment();
   const { user } = useAuth();
 
-  const [selectedEngineId, setSelectedEngineId] = useState<number | "">("");
+  const [selectedEngineId, setSelectedEngineId] = useState<number | "">(
+    engines[0]?.id ?? "",
+  );
   const [selected, setSelected] = useState<Record<number, SelectedEquipment>>(
     {},
   );
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Always derived from the prop — never stale even with async data
   const filteredEquipments = searchQuery.trim()
     ? equipments.filter((eq) => {
         const lower = searchQuery.toLowerCase();
@@ -224,10 +225,6 @@ export default function AssignEquipmentToApparatusModal({
     (sum, s) => sum + s.compartments.length,
     0,
   );
-
-  // -------------------------------------------------------------------------
-  // Handlers
-  // -------------------------------------------------------------------------
 
   function handleToggle(eq: Equipment) {
     setSelected((prev) => {
@@ -447,26 +444,61 @@ export default function AssignEquipmentToApparatusModal({
         }}
       >
         {error && <Alert severity="error">{error}</Alert>}
-
+        <br />
         {/* Apparatus dropdown */}
-        <TextField
-          select
-          label="Apparatus"
-          value={selectedEngineId}
-          onChange={(e) => setSelectedEngineId(Number(e.target.value))}
-          fullWidth
-          variant="outlined"
-          sx={fieldSx}
-        >
-          <MenuItem value="" disabled sx={{ color: "rgba(255,255,255,0.3)" }}>
-            Select apparatus
-          </MenuItem>
-          {engines.map((e) => (
-            <MenuItem key={e.id} value={e.id}>
-              {e.name}
+        {engines.length > 1 ? (
+          <TextField
+            select
+            label="Apparatus"
+            value={selectedEngineId}
+            onChange={(e) => setSelectedEngineId(Number(e.target.value))}
+            fullWidth
+            variant="outlined"
+            sx={fieldSx}
+          >
+            <MenuItem value="" disabled sx={{ color: "rgba(255,255,255,0.3)" }}>
+              Select apparatus
             </MenuItem>
-          ))}
-        </TextField>
+            {engines.map((e) => (
+              <MenuItem key={e.id} value={e.id}>
+                {e.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              px: 1.5,
+              py: 1.25,
+              borderRadius: 1.5,
+              bgcolor: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                color: "rgba(255,255,255,0.35)",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                fontSize: "0.68rem",
+                flexShrink: 0,
+              }}
+            >
+              Apparatus
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{ color: "#e8e8e8", fontWeight: 600, fontSize: "0.875rem" }}
+            >
+              {engines[0]?.name ?? "—"}
+            </Typography>
+          </Box>
+        )}
 
         {/* Section header + search */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
