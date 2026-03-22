@@ -5,6 +5,7 @@ import {
   EquipmentStatus,
 } from "@/utilities/types/engineCheck.types";
 import StatusToggle from "./StatusToggle";
+import { groupByCompartment } from "@/utilities/helper/equipmentGrouping";
 
 const equipmentStatusColors: Record<
   string,
@@ -29,26 +30,6 @@ interface EquipmentTabProps {
     field: "status" | "notes",
     value: string | null,
   ) => void;
-}
-interface EquipmentGroup {
-  name: string;
-  entries: EquipmentCheck[];
-}
-
-function groupByName(checks: EquipmentCheck[]): EquipmentGroup[] {
-  const map = new Map<string, EquipmentCheck[]>();
-  for (const check of checks) {
-    const existing = map.get(check.name);
-    if (existing) {
-      existing.push(check);
-    } else {
-      map.set(check.name, [check]);
-    }
-  }
-  return Array.from(map.entries()).map(([name, entries]) => ({
-    name,
-    entries,
-  }));
 }
 
 export default function EquipmentTab({
@@ -88,13 +69,13 @@ export default function EquipmentTab({
     );
   }
 
-  const groups = groupByName(equipmentChecks);
+  const groups = groupByCompartment(equipmentChecks);
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column" }}>
       {groups.map((group, groupIdx) => (
         <Box
-          key={group.name}
+          key={group.normalized}
           sx={{
             py: 1.5,
             borderBottom:
@@ -103,20 +84,21 @@ export default function EquipmentTab({
                 : "none",
           }}
         >
-          {/* Equipment name header — shown once per group */}
+          {/* Compartment header */}
           <Typography
             variant="body2"
             sx={{
-              color: "rgba(255,255,255,0.85)",
+              color: theme.palette.secondary.main,
               fontWeight: 700,
               fontSize: "0.84rem",
-              mb: group.entries.length > 1 ? 1 : 0.75,
+              mb: 1,
+              textTransform: "capitalize",
             }}
           >
-            {group.name}
+            {group.label}
           </Typography>
 
-          {/* One row per compartment entry */}
+          {/* One row per equipment entry in this compartment */}
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
             {group.entries.map((eq) => (
               <Box
@@ -125,14 +107,11 @@ export default function EquipmentTab({
                   display: "flex",
                   flexDirection: "column",
                   gap: 0.75,
-                  pl: group.entries.length > 1 ? 1.5 : 0,
-                  borderLeft:
-                    group.entries.length > 1
-                      ? `2px solid ${theme.palette.secondary.main}25`
-                      : "none",
+                  pl: 1.5,
+                  borderLeft: `2px solid ${theme.palette.secondary.main}25`,
                 }}
               >
-                {/* Compartment meta + status toggle on the same line */}
+                {/* Equipment name + status toggle */}
                 <Box
                   sx={{
                     display: "flex",
@@ -142,7 +121,7 @@ export default function EquipmentTab({
                     flexWrap: "wrap",
                   }}
                 >
-                  {/* Left: qty + location chips */}
+                  {/* Left: name + quantity */}
                   <Box
                     sx={{
                       display: "flex",
@@ -151,32 +130,16 @@ export default function EquipmentTab({
                       flexWrap: "wrap",
                     }}
                   >
-                    {eq.location_on_truck ? (
-                      <Chip
-                        label={eq.location_on_truck}
-                        size="small"
-                        sx={{
-                          height: 20,
-                          fontSize: "0.68rem",
-                          fontWeight: 600,
-                          bgcolor: `${theme.palette.secondary.main}18`,
-                          color: theme.palette.secondary.main,
-                          border: `1px solid ${theme.palette.secondary.main}35`,
-                          "& .MuiChip-label": { px: 0.9 },
-                        }}
-                      />
-                    ) : (
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "rgba(255,255,255,0.25)",
-                          fontSize: "0.7rem",
-                          fontStyle: "italic",
-                        }}
-                      >
-                        No compartment
-                      </Typography>
-                    )}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: "rgba(255,255,255,0.85)",
+                        fontWeight: 600,
+                        fontSize: "0.82rem",
+                      }}
+                    >
+                      {eq.name}
+                    </Typography>
                     {eq.quantity_assigned != null && (
                       <Chip
                         label={`×${eq.quantity_assigned}`}
