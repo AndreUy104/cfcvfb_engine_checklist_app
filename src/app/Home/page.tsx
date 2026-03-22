@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import ApparatusCard from "@/components/ApparatusCard";
 import EngineCheckModal from "@/components/EngineChecklistModal";
+import ApparatusEditModal, {
+  EngineEditFormData,
+} from "@/components/ApparatusEditModal";
 import {
   Box,
   Grid,
@@ -14,13 +17,20 @@ import {
   Button,
 } from "@mui/material";
 import { messageEnum } from "@/utilities/constants/message.constant";
+import { useAuth } from "@/hooks/useAuth";
 import { useEngine } from "@/hooks/useEngine";
 import { useEngineEquipment } from "@/hooks/useEngineEquipment";
+import { useInspection } from "@/hooks/useInspection";
 import { EngineWithType } from "@/utilities/types/engine.types";
 import AddIcon from "@mui/icons-material/Add";
 import ReportIssueModal from "@/components/Report/IssueTab/ReportIssueModal";
+import { ENGINE_STATUS } from "@/utilities/constants/apparatus.constant";
+import { PERMISSION } from "@/utilities/constants/auth.constant";
+import ApparatusDetailsModal from "@/components/ApparatusDetailsModal";
 
-type ModalType = "engineCheck" | null;
+type EngineStatus = (typeof ENGINE_STATUS)[keyof typeof ENGINE_STATUS];
+
+type ModalType = "engineCheck" | "view" | "edit" | null;
 
 interface ModalState {
   type: ModalType;
@@ -32,16 +42,36 @@ export default function HomePage() {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [modal, setModal] = useState<ModalState>({ type: null, engine: null });
 
-  const { engines, loading, error, fetchEngines } = useEngine();
+  const { positionId } = useAuth();
+  const canEdit =
+    positionId !== null &&
+    (PERMISSION.OIC_AND_OFFICER as readonly number[]).includes(positionId);
+
+  const {
+    engines,
+    loading: enginesLoading,
+    error: enginesError,
+    fetchEngines,
+    updateEngine,
+  } = useEngine();
+
   const {
     assignments,
     loading: equipmentLoading,
     fetchEquipmentByEngine,
+    unassignEquipment,
   } = useEngineEquipment();
+
+  const {
+    inspections,
+    loading: inspectionLoading,
+    fetchInspectionsByEngine,
+  } = useInspection();
+
+  const latestInspection = inspections[0] ?? null;
 
   useEffect(() => {
     fetchEngines();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleStartCheck(engine: EngineWithType) {
@@ -49,8 +79,40 @@ export default function HomePage() {
     await fetchEquipmentByEngine(engine.id);
   }
 
+  async function handleViewEngine(engine: EngineWithType) {
+    setModal({ type: "view", engine });
+    await Promise.all([
+      fetchEquipmentByEngine(engine.id),
+      fetchInspectionsByEngine(engine.id),
+    ]);
+  }
+
+  async function handleEditEngine(engine: EngineWithType) {
+    setModal({ type: "edit", engine });
+    await fetchEquipmentByEngine(engine.id);
+  }
+
   function handleCloseModal() {
     setModal({ type: null, engine: null });
+  }
+
+  async function handleSaveEngine(
+    engineId: number,
+    data: EngineEditFormData,
+  ): Promise<boolean> {
+    await updateEngine(engineId, {
+      status: data.status,
+      plate_number: data.plate_number,
+      water_capacity: data.water_capacity ? Number(data.water_capacity) : null,
+    });
+    return true;
+  }
+
+  async function handleRemoveEquipment(
+    engineEquipmentId: number,
+  ): Promise<boolean> {
+    await unassignEquipment(engineEquipmentId);
+    return true;
   }
 
   const filteredEngines =
@@ -97,6 +159,7 @@ export default function HomePage() {
             </Typography>
           </Box>
         </Box>
+
         <Box display="flex" justifyContent="flex-end" mb={2}>
           <Button
             variant="contained"
@@ -123,21 +186,21 @@ export default function HomePage() {
           <Tab label="Tankers" />
         </Tabs>
 
-        {/* States */}
-        {loading && (
+        {/* Loading / error states */}
+        {enginesLoading && (
           <Box display="flex" justifyContent="center" mt={6}>
             <CircularProgress color="secondary" />
           </Box>
         )}
 
-        {error && (
+        {enginesError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
+            {enginesError}
           </Alert>
         )}
 
         {/* Grid */}
-        {!loading && !error && (
+        {!enginesLoading && !enginesError && (
           <Grid
             container
             spacing={{ xs: 2, sm: 3 }}
@@ -157,10 +220,12 @@ export default function HomePage() {
                     id={engine.id}
                     title={engine.name ?? "Unnamed Engine"}
                     status={
-                      (engine.status as "ready" | "progress" | "alert") ??
-                      "ready"
+                      (engine.status as EngineStatus) ?? ENGINE_STATUS.READY
                     }
+                    onClick={() => handleViewEngine(engine)}
                     onStartCheck={() => handleStartCheck(engine)}
+                    onEdit={() => handleEditEngine(engine)}
+                    canEdit={canEdit}
                   />
                 </Grid>
               ))
@@ -181,6 +246,33 @@ export default function HomePage() {
         assignedEquipment={assignments}
         equipmentLoading={equipmentLoading}
       />
+
+      {/* View Modal */}
+      <ApparatusDetailsModal
+        isOpen={modal.type === "view"}
+        onClose={handleCloseModal}
+        engine={modal.engine}
+        assignedEquipment={assignments}
+        equipmentLoading={equipmentLoading}
+        lastInspection={latestInspection}
+        inspectionLoading={inspectionLoading}
+      />
+
+      {/* Edit Modal — only mounted when the user has edit access */}
+      {canEdit && (
+        <ApparatusEditModal
+          isOpen={modal.type === "edit"}
+          onClose={handleCloseModal}
+          engine={modal.engine}
+          assignedEquipment={assignments}
+          equipmentLoading={equipmentLoading}
+          onSave={handleSaveEngine}
+          onRemoveEquipment={handleRemoveEquipment}
+          onAssigned={() =>
+            modal.engine && fetchEquipmentByEngine(modal.engine.id)
+          }
+        />
+      )}
 
       <ReportIssueModal
         isOpen={reportModalOpen}

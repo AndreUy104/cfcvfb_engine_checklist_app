@@ -7,3 +7,8 @@ export const LEVEL_OPTIONS: readonly LevelStatus[] = [
   "1/4",
   "Empty",
 ];
+
+export const ENGINE_STATUS = {
+  READY: "Ready",
+  DOWN: "Down",
+};

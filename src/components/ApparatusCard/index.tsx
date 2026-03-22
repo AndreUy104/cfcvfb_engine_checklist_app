@@ -10,13 +10,19 @@ import {
   Chip,
   Divider,
   Skeleton,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
 import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EditIcon from "@mui/icons-material/Edit";
 import { createClient } from "@/library/supabase/client";
 import { Tables } from "@/utilities/types/database";
+import { ENGINE_STATUS } from "@/utilities/constants/apparatus.constant";
+
+type EngineStatus = (typeof ENGINE_STATUS)[keyof typeof ENGINE_STATUS];
 
 type LatestInspection = Pick<Tables<"Inspections">, "inspected_at"> & {
   Users: Pick<Tables<"Users">, "name"> | null;
@@ -25,14 +31,16 @@ type LatestInspection = Pick<Tables<"Inspections">, "inspected_at"> & {
 type Props = {
   id: number;
   title: string;
-  status: "ready" | "progress" | "alert";
+  status: EngineStatus;
+  onClick?: () => void;
   onStartCheck: () => void;
+  onEdit?: () => void;
+  canEdit?: boolean;
 };
 
-const STATUS_CONFIG = {
-  ready: { label: "Ready", color: "success" as const },
-  progress: { label: "In Progress", color: "warning" as const },
-  alert: { label: "Alert", color: "error" as const },
+const STATUS_CONFIG: Record<EngineStatus, { color: "success" | "error" }> = {
+  [ENGINE_STATUS.READY]: { color: "success" },
+  [ENGINE_STATUS.DOWN]: { color: "error" },
 };
 
 function formatRelativeTime(dateStr: string): string {
@@ -51,7 +59,10 @@ export default function ApparatusCard({
   id,
   title,
   status,
+  onClick,
   onStartCheck,
+  onEdit,
+  canEdit = false,
 }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const [latestInspection, setLatestInspection] =
@@ -75,10 +86,11 @@ export default function ApparatusCard({
     fetchLatest();
   }, [id, supabase]);
 
-  const statusCfg = STATUS_CONFIG[status];
+  const statusCfg = STATUS_CONFIG[status] ?? STATUS_CONFIG[ENGINE_STATUS.READY];
 
   return (
     <Card
+      onClick={onClick}
       sx={{
         borderRadius: 3,
         height: "100%",
@@ -86,6 +98,14 @@ export default function ApparatusCard({
         flexDirection: "column",
         border: "1px solid",
         borderColor: "divider",
+        cursor: onClick ? "pointer" : "default",
+        transition: "box-shadow 0.2s, transform 0.15s",
+        "&:hover": onClick
+          ? {
+              boxShadow: 4,
+              transform: "translateY(-1px)",
+            }
+          : {},
       }}
     >
       <CardContent
@@ -100,7 +120,7 @@ export default function ApparatusCard({
             </Typography>
           </Box>
           <Chip
-            label={statusCfg.label}
+            label={status}
             color={statusCfg.color}
             size="small"
             sx={{ fontWeight: 700, fontSize: "0.7rem" }}
@@ -166,17 +186,44 @@ export default function ApparatusCard({
 
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Action */}
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<ChecklistRtlIcon />}
-          onClick={onStartCheck}
-          color={statusCfg.color}
-          sx={{ fontWeight: 700, letterSpacing: "0.06em", mt: 1 }}
+        {/* Actions — stop propagation so card onClick doesn't fire */}
+        <Box
+          display="flex"
+          alignItems="center"
+          gap={1}
+          mt={1}
+          onClick={(e) => e.stopPropagation()}
         >
-          Start Check
-        </Button>
+          <Button
+            variant="contained"
+            fullWidth
+            startIcon={<ChecklistRtlIcon />}
+            onClick={onStartCheck}
+            color={statusCfg.color}
+            sx={{ fontWeight: 700, letterSpacing: "0.06em" }}
+          >
+            Start Check
+          </Button>
+
+          {/* Edit icon — only for allowed positions */}
+          {canEdit && (
+            <Tooltip title="Edit apparatus" placement="top" arrow>
+              <IconButton
+                size="small"
+                onClick={onEdit}
+                color="default"
+                sx={{
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  flexShrink: 0,
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
       </CardContent>
     </Card>
   );
