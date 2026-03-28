@@ -1,4 +1,5 @@
 import { Tables, TablesInsert, TablesUpdate } from "@/utilities/types/database";
+import type { SxProps, Theme } from "@mui/material";
 
 export type Equipment = Tables<"Equipments">;
 export type EquipmentInsert = TablesInsert<"Equipments">;
@@ -33,6 +34,7 @@ export interface PowerToolColumn {
   key: keyof Equipment | "actions";
   label: string;
   align?: "left" | "center" | "right";
+  sx?: SxProps<Theme>;
   labelSuffix?: React.ReactNode;
   renderCell: (row: Equipment) => React.ReactNode;
 }
