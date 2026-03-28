@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
+  CircularProgress,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -11,43 +13,83 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Paper,
-  CircularProgress,
-  Alert,
 } from "@mui/material";
 import { getPowerToolColumns } from "./columns";
 import { Equipment } from "@/utilities/types/equipment.types";
 import PowerToolCheckModal from "../PowerToolsChecklistModal";
+import EditPowerToolModal from "../EditPowerToolModal";
 import { useEquipment } from "@/hooks/useEquipment";
+import { PERMISSION } from "@/utilities/constants/auth.constant";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PowerToolsCheckTable() {
-  const { powerTools, loading, error, fetchPowerTools } = useEquipment();
+  const {
+    powerTools,
+    loading,
+    error,
+    fetchPowerTools,
+    updateEquipment,
+    deleteEquipment,
+  } = useEquipment();
+
+  const { positionId } = useAuth();
+  const canEdit =
+    positionId !== null &&
+    (PERMISSION.OIC_AND_OFFICER as readonly number[]).includes(positionId);
+  const canDelete =
+    positionId !== null &&
+    (PERMISSION.OFFICER_ONLY as readonly number[]).includes(positionId);
 
   const [selectedTool, setSelectedTool] = useState<Equipment | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [checkOpen, setCheckOpen] = useState(false);
+
+  function handleCheck(tool: Equipment) {
+    setSelectedTool(tool);
+    setCheckOpen(true);
+  }
+  function handleCloseCheck() {
+    setCheckOpen(false);
+    setSelectedTool(null);
+  }
+
+  const [editTool, setEditTool] = useState<Equipment | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+
+  function handleEdit(tool: Equipment) {
+    setEditTool(tool);
+    setEditOpen(true);
+  }
+  function handleCloseEdit() {
+    setEditOpen(false);
+    setEditTool(null);
+  }
+
+  async function handleDelete(tool: Equipment) {
+    const confirmed = window.confirm(
+      `Remove "${tool.name}" from inventory? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+    const ok = await deleteEquipment(tool.id);
+    if (ok) fetchPowerTools();
+  }
 
   useEffect(() => {
     fetchPowerTools();
   }, []);
 
-  function handleCheck(tool: Equipment) {
-    setSelectedTool(tool);
-    setModalOpen(true);
-  }
+  const columns = getPowerToolColumns({
+    onCheck: handleCheck,
+    onEdit: canEdit ? handleEdit : undefined,
+    onDelete: canDelete ? handleDelete : undefined,
+  });
 
-  function handleCloseModal() {
-    setModalOpen(false);
-    setSelectedTool(null);
-  }
-
-  const columns = getPowerToolColumns({ onCheck: handleCheck });
   const downCount = powerTools.filter(
     (t) => t.total_down && t.total_down > 0,
   ).length;
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      {/* Header */}
+      {/* Header badges */}
       <Box
         display="flex"
         alignItems={{ xs: "flex-start", sm: "center" }}
@@ -116,6 +158,7 @@ export default function PowerToolsCheckTable() {
                       color: "text.disabled",
                       borderBottom: "1px solid rgba(255,255,255,0.08)",
                       py: 1.25,
+                      ...("sx" in col && col.sx ? (col.sx as object) : {}),
                     }}
                   >
                     {col.label}
@@ -154,6 +197,7 @@ export default function PowerToolsCheckTable() {
                         align={col.align ?? "left"}
                         sx={{
                           py: 1.25,
+                          ...("sx" in col && col.sx ? (col.sx as object) : {}),
                         }}
                       >
                         {col.renderCell(tool)}
@@ -167,11 +211,27 @@ export default function PowerToolsCheckTable() {
         </TableContainer>
       )}
 
+      {/* Checklist modal */}
       <PowerToolCheckModal
-        open={modalOpen}
+        open={checkOpen}
         tool={selectedTool}
-        onClose={handleCloseModal}
+        onClose={handleCloseCheck}
       />
+
+      {/* Edit modal — only mounted for permitted users */}
+      {canEdit && (
+        <EditPowerToolModal
+          key={editTool?.id ?? "closed"}
+          open={editOpen}
+          tool={editTool}
+          onClose={handleCloseEdit}
+          onSave={async (id, data) => {
+            const ok = await updateEquipment(id, data);
+            if (ok) fetchPowerTools();
+            return ok;
+          }}
+        />
+      )}
     </Box>
   );
 }
