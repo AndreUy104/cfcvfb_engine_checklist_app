@@ -74,6 +74,7 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     id: "personnel",
     label: "Personnel",
     icon: <Group />,
+    route: "/Personnel",
     allowedPositions: [3],
   },
 ];
