@@ -9,7 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write --ignore-path .gitignore .",
-    "check-format": "prettier --check --ignore-path .gitignore .",
+    "check-format": "prettier --check .",
     "prepare": "husky"
   },
   "dependencies": {
