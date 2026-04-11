@@ -112,6 +112,7 @@ export default function HomePage() {
     engineEquipmentId: number,
   ): Promise<boolean> {
     await unassignEquipment(engineEquipmentId);
+    await fetchEquipmentByEngine(modal.engine!.id); // refresh list so UI updates
     return true;
   }
 

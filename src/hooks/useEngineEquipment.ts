@@ -39,7 +39,8 @@ export function useEngineEquipment(): UseEngineEquipmentReturn {
       `,
       )
       .eq("engine_id", engineId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .is("unassigned_at", null);
 
     if (error) {
       setError(error.message);
@@ -67,22 +68,32 @@ export function useEngineEquipment(): UseEngineEquipmentReturn {
     setLoading(false);
   };
 
-  const unassignEquipment = async (id: number) => {
-    setLoading(true);
-    setError(null);
+  const unassignEquipment = async (
+    engineEquipmentId: number,
+  ): Promise<void> => {
+    try {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
 
-    const { error } = await supabase
-      .from("Engines_Equipment")
-      .delete()
-      .eq("id", id);
+      if (!authUser) return;
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setAssignments((prev) => prev.filter((a) => a.id !== id));
-    }
+      const { data: userData } = await supabase
+        .from("Users")
+        .select("id")
+        .eq("auth_id", authUser.id)
+        .single();
 
-    setLoading(false);
+      const { error } = await supabase
+        .from("Engines_Equipment")
+        .update({
+          unassigned_at: new Date().toISOString(),
+          unassigned_by: userData?.id ?? null,
+        })
+        .eq("id", engineEquipmentId);
+
+      if (error) throw error;
+    } catch (error) {}
   };
 
   const updateAssignment = async (id: number, data: EngineEquipmentUpdate) => {
