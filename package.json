@@ -10,7 +10,9 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write --ignore-path .gitignore .",
     "check-format": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "component:create": "dotenv -e .env -- tsx src/script/create-component-setting.ts",
+    "types:generate": "supabase gen types typescript --project-id rndtjnkhvisfobyqrjfv --schema public > src/utilities/types/database.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -34,6 +36,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.1.8",
@@ -41,6 +44,7 @@
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "lint-staged": {
