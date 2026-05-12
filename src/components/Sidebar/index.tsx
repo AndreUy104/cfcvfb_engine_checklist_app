@@ -26,6 +26,7 @@ import {
   Logout,
   LocalFireDepartment,
   Build,
+  ToggleOn,
 } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
@@ -75,6 +76,13 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     label: "Personnel",
     icon: <Group />,
     route: "/Personnel",
+    allowedPositions: [3],
+  },
+  {
+    id: "componentSettings",
+    label: "Component Settings",
+    icon: <ToggleOn />,
+    route: "/Component-Settings",
     allowedPositions: [3],
   },
 ];
