@@ -13,11 +13,11 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Equipment, EquipmentColumn } from "@/utilities/types/equipment.types";
+import { PpeItemWithAvailable, PpeColumn } from "@/utilities/types/ppe.types";
 
-interface EquipmentTableProps {
-  columns: EquipmentColumn[];
-  rows: Equipment[];
+interface PpeTableProps {
+  columns: PpeColumn[];
+  rows: PpeItemWithAvailable[];
   page: number;
   rowsPerPage: number;
   totalCount: number;
@@ -53,14 +53,32 @@ const PAGINATION_SX = {
   },
 };
 
+function PpeTitle({ row }: { row: PpeItemWithAvailable }) {
+  return (
+    <Typography
+      fontWeight={700}
+      fontSize="0.88rem"
+      letterSpacing="0.02em"
+      sx={{ color: "text.primary" }}
+    >
+      {row.brand} — {row.model} ({row.size})
+    </Typography>
+  );
+}
+
 function MobileCard({
   row,
   columns,
 }: {
-  row: Equipment;
-  columns: EquipmentColumn[];
+  row: PpeItemWithAvailable;
+  columns: PpeColumn[];
 }) {
-  const dataColumns = columns.filter((c) => c.key !== "actions");
+  // Brand/Model/Size are folded into one title row (no single "name" field
+  // on PpeItems, unlike Equipment), so they're excluded from the grid below
+  // to avoid showing them twice.
+  const dataColumns = columns.filter(
+    (c) => !["brand", "model", "size", "actions"].includes(c.key as string),
+  );
   const actionsColumn = columns.find((c) => c.key === "actions");
 
   return (
@@ -77,7 +95,7 @@ function MobileCard({
         "&:active": { background: "rgba(220,38,38,0.04)" },
       }}
     >
-      {/* Top row: name + actions */}
+      {/* Top row: Brand — Model (Size) + actions */}
       <Box
         display="flex"
         justifyContent="space-between"
@@ -85,15 +103,7 @@ function MobileCard({
         mb={1.5}
       >
         <Box flex={1} mr={1}>
-          {dataColumns
-            .filter((c) => c.key === "name")
-            .map((col) => (
-              <Box key={col.key}>
-                {col.renderCell
-                  ? col.renderCell(row)
-                  : String(row[col.key as keyof Equipment] ?? "")}
-              </Box>
-            ))}
+          <PpeTitle row={row} />
         </Box>
         {actionsColumn?.renderCell && (
           <Box sx={{ flexShrink: 0 }}>{actionsColumn.renderCell(row)}</Box>
@@ -102,35 +112,33 @@ function MobileCard({
 
       {/* Remaining data fields as label/value rows */}
       <Box display="grid" gridTemplateColumns="1fr 1fr" gap={1.25}>
-        {dataColumns
-          .filter((c) => c.key !== "name")
-          .map((col) => (
-            <Box key={col.key}>
-              <Typography
-                sx={{
-                  color: "#dc2626",
-                  fontSize: "0.65rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  mb: 0.4,
-                }}
-              >
-                {col.label}
-              </Typography>
-              <Box>
-                {col.renderCell
-                  ? col.renderCell(row)
-                  : String(row[col.key as keyof Equipment] ?? "")}
-              </Box>
+        {dataColumns.map((col) => (
+          <Box key={col.key}>
+            <Typography
+              sx={{
+                color: "#dc2626",
+                fontSize: "0.65rem",
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                mb: 0.4,
+              }}
+            >
+              {col.label}
+            </Typography>
+            <Box>
+              {col.renderCell
+                ? col.renderCell(row)
+                : String(row[col.key as keyof PpeItemWithAvailable] ?? "")}
             </Box>
-          ))}
+          </Box>
+        ))}
       </Box>
     </Box>
   );
 }
 
-export default function EquipmentTable({
+export default function PpeTable({
   columns,
   rows,
   page,
@@ -138,7 +146,7 @@ export default function EquipmentTable({
   totalCount,
   onPageChange,
   onRowsPerPageChange,
-}: EquipmentTableProps) {
+}: PpeTableProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -162,7 +170,7 @@ export default function EquipmentTable({
                 fontSize: "0.875rem",
               }}
             >
-              No equipment found.
+              No PPE items found.
             </Box>
           ) : (
             rows.map((row) => (
@@ -199,7 +207,7 @@ export default function EquipmentTable({
                       borderBottom: "none",
                     }}
                   >
-                    No equipment found.
+                    No PPE items found.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -213,6 +221,11 @@ export default function EquipmentTable({
                       },
                       "&:hover": { background: "rgba(220,38,38,0.04)" },
                       transition: "background 0.15s",
+                      // Low-stock rows get a subtle persistent highlight,
+                      // distinct from the hover state above.
+                      ...(row.is_low_stock && {
+                        background: "rgba(234,179,8,0.08)",
+                      }),
                     }}
                   >
                     {columns.map((col) => (
@@ -223,7 +236,10 @@ export default function EquipmentTable({
                         {col.renderCell
                           ? col.renderCell(row)
                           : col.key !== "actions"
-                            ? String(row[col.key as keyof Equipment] ?? "")
+                            ? String(
+                                row[col.key as keyof PpeItemWithAvailable] ??
+                                  "",
+                              )
                             : null}
                       </TableCell>
                     ))}

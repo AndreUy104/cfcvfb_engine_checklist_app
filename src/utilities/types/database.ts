@@ -465,6 +465,116 @@ export type Database = {
           },
         ];
       };
+      PpeItems: {
+        Row: {
+          brand: string;
+          category: Database["public"]["Enums"]["ppe_category"];
+          created_at: string;
+          id: number;
+          issued: number;
+          model: string;
+          size: string;
+          total: number;
+          updated_at: string;
+        };
+        Insert: {
+          brand: string;
+          category: Database["public"]["Enums"]["ppe_category"];
+          created_at?: string;
+          id?: never;
+          issued?: number;
+          model: string;
+          size: string;
+          total?: number;
+          updated_at?: string;
+        };
+        Update: {
+          brand?: string;
+          category?: Database["public"]["Enums"]["ppe_category"];
+          created_at?: string;
+          id?: never;
+          issued?: number;
+          model?: string;
+          size?: string;
+          total?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      PpeTransactions: {
+        Row: {
+          approved_by_name: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at: string;
+          firefighter_name: string | null;
+          id: number;
+          occurred_at: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id: number | null;
+        };
+        Insert: {
+          approved_by_name?: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at?: string;
+          firefighter_name?: string | null;
+          id?: never;
+          occurred_at?: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id?: number | null;
+        };
+        Update: {
+          approved_by_name?: string | null;
+          condition?: Database["public"]["Enums"]["ppe_condition"];
+          created_at?: string;
+          firefighter_name?: string | null;
+          id?: never;
+          occurred_at?: string;
+          ppe_item_id?: number;
+          quantity?: number;
+          recorded_by?: number;
+          signature_path?: string;
+          type?: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "PpeTransactions_ppe_item_id_fkey";
+            columns: ["ppe_item_id"];
+            isOneToOne: false;
+            referencedRelation: "PpeItems";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "PpeTransactions_ppe_item_id_fkey";
+            columns: ["ppe_item_id"];
+            isOneToOne: false;
+            referencedRelation: "PpeItemsWithAvailable";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "PpeTransactions_recorded_by_fkey";
+            columns: ["recorded_by"];
+            isOneToOne: false;
+            referencedRelation: "Users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "PpeTransactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "Users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       Users: {
         Row: {
           auth_id: string;
@@ -505,14 +615,159 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      FirefighterPpeBalances: {
+        Row: {
+          firefighter_name: string | null;
+          ppe_item_id: number | null;
+          quantity_held: number | null;
+          user_id: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "PpeTransactions_ppe_item_id_fkey";
+            columns: ["ppe_item_id"];
+            isOneToOne: false;
+            referencedRelation: "PpeItems";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "PpeTransactions_ppe_item_id_fkey";
+            columns: ["ppe_item_id"];
+            isOneToOne: false;
+            referencedRelation: "PpeItemsWithAvailable";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "PpeTransactions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "Users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      PpeItemsWithAvailable: {
+        Row: {
+          available: number | null;
+          brand: string | null;
+          category: Database["public"]["Enums"]["ppe_category"] | null;
+          created_at: string | null;
+          id: number | null;
+          is_low_stock: boolean | null;
+          issued: number | null;
+          model: string | null;
+          size: string | null;
+          total: number | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          available?: never;
+          brand?: string | null;
+          category?: Database["public"]["Enums"]["ppe_category"] | null;
+          created_at?: string | null;
+          id?: number | null;
+          is_low_stock?: never;
+          issued?: number | null;
+          model?: string | null;
+          size?: string | null;
+          total?: number | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          available?: never;
+          brand?: string | null;
+          category?: Database["public"]["Enums"]["ppe_category"] | null;
+          created_at?: string | null;
+          id?: number | null;
+          is_low_stock?: never;
+          issued?: number | null;
+          model?: string | null;
+          size?: string | null;
+          total?: number | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      current_position_id: { Args: never; Returns: number };
       get_my_position_id: { Args: never; Returns: number };
       is_admin: { Args: never; Returns: boolean };
+      issue_ppe: {
+        Args: {
+          p_approved_by_name: string;
+          p_condition: Database["public"]["Enums"]["ppe_condition"];
+          p_firefighter_name?: string;
+          p_occurred_at?: string;
+          p_ppe_item_id: number;
+          p_quantity: number;
+          p_signature_path: string;
+          p_user_id?: number;
+        };
+        Returns: {
+          approved_by_name: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at: string;
+          firefighter_name: string | null;
+          id: number;
+          occurred_at: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id: number | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "PpeTransactions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      return_ppe: {
+        Args: {
+          p_condition: Database["public"]["Enums"]["ppe_condition"];
+          p_firefighter_name?: string;
+          p_occurred_at?: string;
+          p_ppe_item_id: number;
+          p_quantity: number;
+          p_signature_path: string;
+          p_user_id?: number;
+        };
+        Returns: {
+          approved_by_name: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at: string;
+          firefighter_name: string | null;
+          id: number;
+          occurred_at: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id: number | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "PpeTransactions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
-      [_ in never]: never;
+      ppe_category:
+        | "Helmet"
+        | "Turnout Coat"
+        | "Turnout Pants"
+        | "Boots"
+        | "Gloves"
+        | "Hood"
+        | "SCBA";
+      ppe_condition: "New" | "Good" | "Fair" | "Poor" | "Damaged";
+      ppe_transaction_type: "issue" | "return";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -642,6 +897,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ppe_category: [
+        "Helmet",
+        "Turnout Coat",
+        "Turnout Pants",
+        "Boots",
+        "Gloves",
+        "Hood",
+        "SCBA",
+      ],
+      ppe_condition: ["New", "Good", "Fair", "Poor", "Damaged"],
+      ppe_transaction_type: ["issue", "return"],
+    },
   },
 } as const;
