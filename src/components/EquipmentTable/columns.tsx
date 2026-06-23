@@ -19,6 +19,8 @@ function StatBadge({ value }: { value: number }) {
         fontWeight: 700,
         fontSize: "0.85rem",
         letterSpacing: "0.02em",
+        background: "rgba(220,38,38,0.08)",
+        color: "#dc2626",
       }}
     >
       {value}
