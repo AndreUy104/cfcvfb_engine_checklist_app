@@ -502,7 +502,7 @@ export default function IssueReturnPpeModal({
             ) : (
               eligibleItems.map((item) => (
                 <MenuItem key={item.id} value={item.id}>
-                  {item.brand} — {item.model} ({item.size}){" "}
+                  {item.category} — {item.brand} ({item.size}){" "}
                   {mode === "issue"
                     ? `· ${item.available} available`
                     : `· holds ${
