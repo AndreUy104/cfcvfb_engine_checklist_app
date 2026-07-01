@@ -70,8 +70,9 @@ export type FirefighterIdentity =
   | { kind: "registered"; userId: number }
   | { kind: "unregistered"; firefighterName: string };
 
-// Args shape for issue_ppe/return_ppe RPCs. recorded_by is intentionally
-// absent — it's resolved server-side from the session, never sent by the client.
+// Args shape for issue_ppe/return_ppe RPCs (single item). recorded_by is
+// intentionally absent — it's resolved server-side from the session, never
+// sent by the client.
 export interface IssueReturnPpeInput {
   ppeItemId: number;
   firefighter: FirefighterIdentity;
@@ -95,4 +96,34 @@ export interface IssueReturnFormData {
   quantity: string | number | "";
   condition: PpeCondition | "";
   occurredAt: string;
+}
+
+// ----------------------------------------------------------------------------
+// Bulk issue/return — one firefighter, one signature, one signed event,
+// multiple PPE line items. Backed by the issue_ppe_bulk / return_ppe_bulk
+// RPCs, which run the whole batch as one atomic transaction.
+// ----------------------------------------------------------------------------
+
+// A single line in the cart. Two lines CAN share the same ppeItemId (e.g.
+// returning 2 gloves in "Good" condition and 1 in "Damaged") — the RPC
+// handles that correctly by re-checking availability/balance per line.
+export interface BulkPpeLineItem {
+  ppeItemId: number;
+  quantity: number;
+  condition: PpeCondition;
+}
+
+export interface BulkIssuePpeInput {
+  items: BulkPpeLineItem[];
+  firefighter: FirefighterIdentity;
+  signaturePath: string;
+  occurredAt?: string;
+  approvedByName: string;
+}
+
+export interface BulkReturnPpeInput {
+  items: BulkPpeLineItem[];
+  firefighter: FirefighterIdentity;
+  signaturePath: string;
+  occurredAt?: string;
 }

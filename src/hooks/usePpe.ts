@@ -8,6 +8,8 @@ import type {
   FirefighterPpeBalance,
   IssueReturnPpeInput,
   FirefighterIdentity,
+  BulkIssuePpeInput,
+  BulkReturnPpeInput,
 } from "@/utilities/types/ppe.types";
 import toast from "react-hot-toast";
 
@@ -42,6 +44,10 @@ interface UsePpeReturn {
   uploadSignature: (dataUrl: string) => Promise<string | null>;
   issuePpe: (input: IssueReturnPpeInput) => Promise<PpeTransaction | null>;
   returnPpe: (input: IssueReturnPpeInput) => Promise<PpeTransaction | null>;
+  issuePpeBulk: (input: BulkIssuePpeInput) => Promise<PpeTransaction[] | null>;
+  returnPpeBulk: (
+    input: BulkReturnPpeInput,
+  ) => Promise<PpeTransaction[] | null>;
   fetchFirefighterBalance: (
     firefighter: FirefighterIdentity,
   ) => Promise<FirefighterPpeBalance[]>;
@@ -179,13 +185,13 @@ export function usePpe(): UsePpeReturn {
   };
 
   // Converts the SignaturePad's PNG data URL into a real Blob and uploads it
-  // to the private ppe-signatures bucket. Called BEFORE issuePpe/returnPpe,
-  // not after — the RPC needs a real signature_path at insert time, and the
-  // transaction's id (the more "natural" filename) doesn't exist until the
-  // RPC has already run. Using a client-generated unique name instead avoids
-  // that ordering problem entirely; worst case on an RPC failure afterward
-  // (e.g. insufficient stock) is one harmless orphaned PNG, not a broken
-  // transaction record.
+  // to the private ppe-signatures bucket. Called BEFORE issuePpe/returnPpe
+  // (and before issuePpeBulk/returnPpeBulk) — the RPC needs a real
+  // signature_path at insert time, and the transaction's id (the more
+  // "natural" filename) doesn't exist until the RPC has already run. Using
+  // a client-generated unique name instead avoids that ordering problem
+  // entirely; worst case on an RPC failure afterward (e.g. insufficient
+  // stock) is one harmless orphaned PNG, not a broken transaction record.
   const uploadSignature = async (dataUrl: string): Promise<string | null> => {
     try {
       // Data URL -> Blob. fetch() against a data: URL is a standard, simple
@@ -286,6 +292,77 @@ export function usePpe(): UsePpeReturn {
     return data;
   };
 
+  // Bulk issue — one firefighter, one signature, N line items, all inserted
+  // atomically by issue_ppe_bulk. The RPC returns setof "PpeTransactions",
+  // so `data` here is already the array of inserted rows (one per line item).
+  const issuePpeBulk = async (
+    input: BulkIssuePpeInput,
+  ): Promise<PpeTransaction[] | null> => {
+    setLoading(true);
+    setError(null);
+
+    const { data, error } = await supabase.rpc("issue_ppe_bulk", {
+      p_items: input.items.map((line) => ({
+        ppe_item_id: line.ppeItemId,
+        quantity: line.quantity,
+        condition: line.condition,
+      })),
+      ...firefighterIdentityToRpcParams(input.firefighter),
+      p_signature_path: input.signaturePath,
+      p_occurred_at: input.occurredAt,
+      p_approved_by_name: input.approvedByName,
+    });
+
+    if (error) {
+      // Whole batch failed — nothing was written. Surfaces which specific
+      // line item broke it, e.g. "Cannot issue 3 unit(s) of item 12: only 1 available"
+      setError(error.message);
+      toast.error(error.message);
+      setLoading(false);
+      return null;
+    }
+
+    await fetchPpeItems();
+    toast.success(
+      `${input.items.length} item${input.items.length === 1 ? "" : "s"} issued`,
+    );
+    setLoading(false);
+    return data;
+  };
+
+  // Bulk return — mirrors issuePpeBulk without approved_by_name.
+  const returnPpeBulk = async (
+    input: BulkReturnPpeInput,
+  ): Promise<PpeTransaction[] | null> => {
+    setLoading(true);
+    setError(null);
+
+    const { data, error } = await supabase.rpc("return_ppe_bulk", {
+      p_items: input.items.map((line) => ({
+        ppe_item_id: line.ppeItemId,
+        quantity: line.quantity,
+        condition: line.condition,
+      })),
+      ...firefighterIdentityToRpcParams(input.firefighter),
+      p_signature_path: input.signaturePath,
+      p_occurred_at: input.occurredAt,
+    });
+
+    if (error) {
+      setError(error.message);
+      toast.error(error.message);
+      setLoading(false);
+      return null;
+    }
+
+    await fetchPpeItems();
+    toast.success(
+      `${input.items.length} item${input.items.length === 1 ? "" : "s"} returned`,
+    );
+    setLoading(false);
+    return data;
+  };
+
   // Powers the Return modal's item dropdown: filtered to what a specific
   // firefighter actually currently holds, per the spec requirement that
   // returns can't exceed what they were issued. Accepts either identity
@@ -323,6 +400,8 @@ export function usePpe(): UsePpeReturn {
     uploadSignature,
     issuePpe,
     returnPpe,
+    issuePpeBulk,
+    returnPpeBulk,
     fetchFirefighterBalance,
   };
 }
