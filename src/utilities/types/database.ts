@@ -725,6 +725,36 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      issue_ppe_bulk: {
+        Args: {
+          p_approved_by_name?: string;
+          p_firefighter_name?: string;
+          p_items: Json;
+          p_occurred_at?: string;
+          p_signature_path?: string;
+          p_user_id?: number;
+        };
+        Returns: {
+          approved_by_name: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at: string;
+          firefighter_name: string | null;
+          id: number;
+          occurred_at: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "PpeTransactions";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       return_ppe: {
         Args: {
           p_condition: Database["public"]["Enums"]["ppe_condition"];
@@ -754,6 +784,35 @@ export type Database = {
           to: "PpeTransactions";
           isOneToOne: true;
           isSetofReturn: false;
+        };
+      };
+      return_ppe_bulk: {
+        Args: {
+          p_firefighter_name?: string;
+          p_items: Json;
+          p_occurred_at?: string;
+          p_signature_path?: string;
+          p_user_id?: number;
+        };
+        Returns: {
+          approved_by_name: string | null;
+          condition: Database["public"]["Enums"]["ppe_condition"];
+          created_at: string;
+          firefighter_name: string | null;
+          id: number;
+          occurred_at: string;
+          ppe_item_id: number;
+          quantity: number;
+          recorded_by: number;
+          signature_path: string;
+          type: Database["public"]["Enums"]["ppe_transaction_type"];
+          user_id: number | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "PpeTransactions";
+          isOneToOne: false;
+          isSetofReturn: true;
         };
       };
     };
